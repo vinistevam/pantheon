@@ -78,9 +78,8 @@ public class EeaSendRawTransaction implements JsonRpcMethod {
       return new JsonRpcErrorResponse(request.getId(), JsonRpcError.INVALID_PARAMS);
     }
 
-    if (!privateTransaction
-        .getRestriction()
-        .equals(BytesValue.wrap("unrestricted".getBytes(UTF_8)))) {
+    String restriction = new String(privateTransaction.getRestriction().extractArray(), UTF_8);
+    if (!privateTransactionHandler.getPrivacyParameters().getRestrictions().contains(restriction)) {
       return new JsonRpcErrorResponse(
           request.getId(), JsonRpcError.UNIMPLEMENTED_PRIVATE_TRANSACTION_TYPE);
     }

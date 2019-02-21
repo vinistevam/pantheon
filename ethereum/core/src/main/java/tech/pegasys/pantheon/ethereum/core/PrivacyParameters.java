@@ -24,6 +24,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import com.google.common.io.Files;
 
@@ -38,6 +41,9 @@ public class PrivacyParameters {
   private String publicKey;
   private File publicKeyFile;
   private WorldStateArchive privateWorldStateArchive;
+  private List<String> consensusSupported = new ArrayList<>();
+
+  private List<String> restrictions = Arrays.asList("unrestricted");
 
   public String getPublicKey() {
     return publicKey;
@@ -100,5 +106,17 @@ public class PrivacyParameters {
 
   public WorldStateArchive getPrivateWorldStateArchive() {
     return privateWorldStateArchive;
+  }
+
+  public void appendConsensus(String consensus) {
+    consensusSupported.add(consensus);
+  }
+
+  public List<String> getConsensusSupported() {
+    return consensusSupported;
+  }
+
+  public List<String> getRestrictions() {
+    return restrictions;
   }
 }

@@ -218,6 +218,7 @@ public class MainnetPantheonController implements PantheonController<Void> {
 
   @Override
   public PrivacyParameters getPrivacyParameters() {
+    privacyParameters.appendConsensus("PoW");
     return privacyParameters;
   }
 }

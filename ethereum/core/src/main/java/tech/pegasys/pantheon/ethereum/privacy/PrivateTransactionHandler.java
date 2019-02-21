@@ -34,10 +34,13 @@ public class PrivateTransactionHandler {
   private final Enclave enclave;
   private final Address privacyPrecompileAddress;
 
+  private PrivacyParameters privacyParameters = PrivacyParameters.noPrivacy();
+
   public PrivateTransactionHandler(final PrivacyParameters privacyParameters) {
     this(
         new Enclave(privacyParameters.getUrl()),
         Address.privacyPrecompiled(privacyParameters.getPrivacyAddress()));
+    this.privacyParameters = privacyParameters;
   }
 
   public PrivateTransactionHandler(final Enclave enclave, final Address privacyPrecompileAddress) {
@@ -85,5 +88,9 @@ public class PrivateTransactionHandler {
         BytesValue.wrap(transactionEnclaveKey.getBytes(Charset.defaultCharset())),
         privateTransaction.getSender(),
         privateTransaction.getChainId().getAsInt());
+  }
+
+  public PrivacyParameters getPrivacyParameters() {
+    return privacyParameters;
   }
 }
