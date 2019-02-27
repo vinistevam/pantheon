@@ -15,6 +15,7 @@ package tech.pegasys.pantheon.ethereum.jsonrpc.internal.results.privacy;
 import tech.pegasys.pantheon.ethereum.core.Hash;
 import tech.pegasys.pantheon.ethereum.core.Log;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.results.TransactionReceiptLogResult;
+import tech.pegasys.pantheon.util.bytes.BytesValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,14 +33,22 @@ public class PrivateTransactionReceiptResult {
   private final String contractAddress;
   private final String from;
   private final String to;
+  private final List<Log> logs;
+
+  private final BytesValue events;
 
   public PrivateTransactionReceiptResult(
-      final String contractAddress, final String from, final String to) {
-
+      final String contractAddress,
+      final String from,
+      final String to,
+      final List<Log> logs,
+      final BytesValue events) {
     this.contractAddress = contractAddress;
     this.from = from;
-    // TODO: handle logs as in TransactionReceiptResult
+    // TODO(PRIV): handle logs as in TransactionReceiptResult
     this.to = to;
+    this.logs = logs;
+    this.events = events;
   }
 
   @JsonGetter(value = "contractAddress")
@@ -55,6 +64,16 @@ public class PrivateTransactionReceiptResult {
   @JsonGetter(value = "to")
   public String getTo() {
     return to;
+  }
+
+  @JsonGetter(value = "logs")
+  public List<Log> getLogs() {
+    return logs;
+  }
+
+  @JsonGetter(value = "events")
+  public BytesValue getEvents() {
+    return events;
   }
 
   private List<TransactionReceiptLogResult> logReceipts(

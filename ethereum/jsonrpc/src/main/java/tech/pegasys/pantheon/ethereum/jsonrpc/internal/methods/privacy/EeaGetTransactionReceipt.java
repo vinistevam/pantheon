@@ -19,6 +19,7 @@ import tech.pegasys.pantheon.enclave.types.ReceiveRequest;
 import tech.pegasys.pantheon.enclave.types.ReceiveResponse;
 import tech.pegasys.pantheon.ethereum.core.Address;
 import tech.pegasys.pantheon.ethereum.core.Hash;
+import tech.pegasys.pantheon.ethereum.core.PrivacyParameters;
 import tech.pegasys.pantheon.ethereum.core.Transaction;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.JsonRpcRequest;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.methods.JsonRpcMethod;
@@ -29,6 +30,8 @@ import tech.pegasys.pantheon.ethereum.jsonrpc.internal.response.JsonRpcSuccessRe
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.results.privacy.PrivateTransactionReceiptResult;
 import tech.pegasys.pantheon.ethereum.privacy.PrivateTransaction;
 import tech.pegasys.pantheon.ethereum.rlp.BytesValueRLPInput;
+import tech.pegasys.pantheon.ethereum.rlp.RLP;
+import tech.pegasys.pantheon.util.bytes.Bytes32;
 import tech.pegasys.pantheon.util.bytes.BytesValue;
 
 import java.io.IOException;
@@ -40,14 +43,17 @@ public class EeaGetTransactionReceipt implements JsonRpcMethod {
   private final BlockchainQueries blockchain;
   private final Enclave enclave;
   private final JsonRpcParameter parameters;
+  private final PrivacyParameters privacyParameters;
 
   public EeaGetTransactionReceipt(
       final BlockchainQueries blockchain,
       final Enclave enclave,
-      final JsonRpcParameter parameters) {
+      final JsonRpcParameter parameters,
+      final PrivacyParameters privacyParameters) {
     this.blockchain = blockchain;
     this.enclave = enclave;
     this.parameters = parameters;
+    this.privacyParameters = privacyParameters;
   }
 
   @Override
@@ -79,10 +85,16 @@ public class EeaGetTransactionReceipt implements JsonRpcMethod {
                     final String contractAddress =
                         Address.contractAddress(pt.getSender(), pt.getNonce()).toString();
                     // TODO(PRIV): Return internal transaction emitted events and return values
+
+                    BytesValue rlpEncoded = RLP.encode(pt::writeTo);
+                    Bytes32 txHash = tech.pegasys.pantheon.crypto.Hash.keccak256(rlpEncoded);
+
                     return new PrivateTransactionReceiptResult(
                         contractAddress,
                         pt.getSender().toString(),
-                        pt.getTo().map(Address::toString).orElse(null));
+                        pt.getTo().map(Address::toString).orElse(null),
+                        privacyParameters.getPrivateStateStorage().getLogs(txHash).get(),
+                        privacyParameters.getPrivateStateStorage().getEvents(txHash).get());
                   } catch (IOException e) {
                     return null;
                   }

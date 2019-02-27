@@ -25,6 +25,7 @@ import tech.pegasys.pantheon.enclave.types.ReceiveResponse;
 import tech.pegasys.pantheon.ethereum.chain.Blockchain;
 import tech.pegasys.pantheon.ethereum.core.Address;
 import tech.pegasys.pantheon.ethereum.core.Hash;
+import tech.pegasys.pantheon.ethereum.core.PrivacyParameters;
 import tech.pegasys.pantheon.ethereum.core.Transaction;
 import tech.pegasys.pantheon.ethereum.core.Wei;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.JsonRpcRequest;
@@ -38,13 +39,18 @@ import tech.pegasys.pantheon.util.bytes.BytesValue;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.file.Path;
 import java.util.Base64;
 import java.util.Optional;
 
 import com.google.common.collect.Lists;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class EeaGetTransactionReceiptTest {
+
+  @Rule public final TemporaryFolder temp = new TemporaryFolder();
 
   private final Address sender =
       Address.fromHexString("0x0000000000000000000000000000000000000003");
@@ -103,14 +109,22 @@ public class EeaGetTransactionReceiptTest {
   private final BlockchainQueries blockchainQueries = mock(BlockchainQueries.class);
   private final Blockchain blockchain = mock(Blockchain.class);
   private final Enclave enclave = mock(Enclave.class);
-  private final EeaGetTransactionReceipt eeaGetTransactionReceipt =
-      new EeaGetTransactionReceipt(blockchainQueries, enclave, parameters);
-  Object[] params = new Object[] {transaction.hash(), "EnclavePublicKey"};
-  private final JsonRpcRequest request =
-      new JsonRpcRequest("1", "eea_getTransactionReceipt", params);
+
+  private PrivacyParameters privacyParameters = PrivacyParameters.noPrivacy();
 
   @Test
   public void createsPrivateTransactionReceipt() throws IOException {
+    final Path dataDir = temp.newFolder().toPath();
+    final Path privateDb = dataDir.resolve("private");
+
+    privacyParameters.setEnabled(true);
+    privacyParameters.enablePrivateDB(privateDb);
+
+    final EeaGetTransactionReceipt eeaGetTransactionReceipt =
+        new EeaGetTransactionReceipt(blockchainQueries, enclave, parameters, privacyParameters);
+    Object[] params = new Object[] {transaction.hash(), "EnclavePublicKey"};
+    final JsonRpcRequest request = new JsonRpcRequest("1", "eea_getTransactionReceipt", params);
+
     when(blockchainQueries.getBlockchain()).thenReturn(blockchain);
     when(blockchain.getTransactionByHash(transaction.hash())).thenReturn(Optional.of(transaction));
     final BytesValueRLPOutput bvrlp = new BytesValueRLPOutput();

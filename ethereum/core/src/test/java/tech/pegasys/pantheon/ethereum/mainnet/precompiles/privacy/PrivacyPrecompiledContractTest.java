@@ -29,6 +29,7 @@ import tech.pegasys.pantheon.ethereum.core.MutableWorldState;
 import tech.pegasys.pantheon.ethereum.core.ProcessableBlockHeader;
 import tech.pegasys.pantheon.ethereum.core.WorldUpdater;
 import tech.pegasys.pantheon.ethereum.mainnet.SpuriousDragonGasCalculator;
+import tech.pegasys.pantheon.ethereum.privacy.PrivateStateStorage;
 import tech.pegasys.pantheon.ethereum.privacy.PrivateTransaction;
 import tech.pegasys.pantheon.ethereum.privacy.PrivateTransactionProcessor;
 import tech.pegasys.pantheon.ethereum.vm.BlockHashLookup;
@@ -112,14 +113,23 @@ public class PrivacyPrecompiledContractTest {
     MutableWorldState mutableWorldState = mock(MutableWorldState.class);
     when(mutableWorldState.updater()).thenReturn(mock(WorldUpdater.class));
     when(worldStateArchive.getMutable()).thenReturn(mutableWorldState);
+    PrivateStateStorage privateStateStorage = mock(PrivateStateStorage.class);
 
     privacyPrecompiledContract =
         new PrivacyPrecompiledContract(
-            new SpuriousDragonGasCalculator(), publicKey, mockEnclave(), worldStateArchive);
+            new SpuriousDragonGasCalculator(),
+            publicKey,
+            mockEnclave(),
+            worldStateArchive,
+            privateStateStorage);
     privacyPrecompiledContract.setPrivateTransactionProcessor(mockPrivateTxProcessor());
     brokenPrivateTransactionHandler =
         new PrivacyPrecompiledContract(
-            new SpuriousDragonGasCalculator(), publicKey, brokenMockEnclave(), worldStateArchive);
+            new SpuriousDragonGasCalculator(),
+            publicKey,
+            brokenMockEnclave(),
+            worldStateArchive,
+            privateStateStorage);
     messageFrame = mock(MessageFrame.class);
   }
 

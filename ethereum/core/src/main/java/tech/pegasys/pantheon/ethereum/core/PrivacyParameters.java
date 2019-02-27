@@ -14,6 +14,7 @@ package tech.pegasys.pantheon.ethereum.core;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import tech.pegasys.pantheon.ethereum.privacy.PrivateStateStorage;
 import tech.pegasys.pantheon.ethereum.storage.StorageProvider;
 import tech.pegasys.pantheon.ethereum.storage.keyvalue.RocksDbStorageProvider;
 import tech.pegasys.pantheon.ethereum.worldstate.WorldStateArchive;
@@ -31,6 +32,7 @@ public class PrivacyParameters {
   private static final String ENCLAVE_URL = "http://localhost:8888";
   public static final URI DEFAULT_ENCLAVE_URL = URI.create(ENCLAVE_URL);
   private final String PRIVATE_DATABASE_PATH = "private";
+  private final String PRIVATE_STATE_DATABASE_PATH = "privateState";
 
   private Integer privacyAddress;
   private boolean enabled;
@@ -39,6 +41,8 @@ public class PrivacyParameters {
   private File publicKeyFile;
   private WorldStateArchive privateWorldStateArchive;
   private StorageProvider privateStorageProvider;
+
+  private PrivateStateStorage privateStateStorage;
 
   public String getPublicKey() {
     return publicKey;
@@ -97,6 +101,15 @@ public class PrivacyParameters {
     final WorldStateStorage privateWorldStateStorage =
         privateStorageProvider.createWorldStateStorage();
     this.privateWorldStateArchive = new WorldStateArchive(privateWorldStateStorage);
+
+    final Path privateStateDbPath = path.resolve(PRIVATE_STATE_DATABASE_PATH);
+    final StorageProvider privateStateStorageProvider =
+        RocksDbStorageProvider.create(privateStateDbPath, new NoOpMetricsSystem());
+    this.privateStateStorage = privateStateStorageProvider.createPrivateStateStorage();
+  }
+
+  public PrivateStateStorage getPrivateStateStorage() {
+    return privateStateStorage;
   }
 
   public WorldStateArchive getPrivateWorldStateArchive() {

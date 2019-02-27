@@ -14,6 +14,7 @@ package tech.pegasys.pantheon.ethereum.mainnet.precompiles.privacy;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import tech.pegasys.pantheon.crypto.Hash;
 import tech.pegasys.pantheon.enclave.Enclave;
 import tech.pegasys.pantheon.enclave.types.ReceiveRequest;
 import tech.pegasys.pantheon.enclave.types.ReceiveResponse;
@@ -22,13 +23,16 @@ import tech.pegasys.pantheon.ethereum.core.PrivacyParameters;
 import tech.pegasys.pantheon.ethereum.core.WorldUpdater;
 import tech.pegasys.pantheon.ethereum.mainnet.AbstractPrecompiledContract;
 import tech.pegasys.pantheon.ethereum.mainnet.TransactionProcessor;
+import tech.pegasys.pantheon.ethereum.privacy.PrivateStateStorage;
 import tech.pegasys.pantheon.ethereum.privacy.PrivateTransaction;
 import tech.pegasys.pantheon.ethereum.privacy.PrivateTransactionProcessor;
 import tech.pegasys.pantheon.ethereum.rlp.BytesValueRLPInput;
+import tech.pegasys.pantheon.ethereum.rlp.RLP;
 import tech.pegasys.pantheon.ethereum.vm.GasCalculator;
 import tech.pegasys.pantheon.ethereum.vm.MessageFrame;
 import tech.pegasys.pantheon.ethereum.vm.OperationTracer;
 import tech.pegasys.pantheon.ethereum.worldstate.WorldStateArchive;
+import tech.pegasys.pantheon.util.bytes.Bytes32;
 import tech.pegasys.pantheon.util.bytes.BytesValue;
 
 import java.io.IOException;
@@ -41,6 +45,7 @@ public class PrivacyPrecompiledContract extends AbstractPrecompiledContract {
   private final Enclave enclave;
   private final String enclavePublicKey;
   private final WorldStateArchive privateWorldStateArchive;
+  private final PrivateStateStorage privateStateStorage;
   private PrivateTransactionProcessor privateTransactionProcessor;
 
   private static final Logger LOG = LogManager.getLogger();
@@ -51,18 +56,21 @@ public class PrivacyPrecompiledContract extends AbstractPrecompiledContract {
         gasCalculator,
         privacyParameters.getPublicKey(),
         new Enclave(privacyParameters.getUrl()),
-        privacyParameters.getPrivateWorldStateArchive());
+        privacyParameters.getPrivateWorldStateArchive(),
+        privacyParameters.getPrivateStateStorage());
   }
 
   PrivacyPrecompiledContract(
       final GasCalculator gasCalculator,
       final String publicKey,
       final Enclave enclave,
-      final WorldStateArchive worldStateArchive) {
+      final WorldStateArchive worldStateArchive,
+      final PrivateStateStorage privateStateStorage) {
     super("Privacy", gasCalculator);
     this.enclave = enclave;
     this.enclavePublicKey = publicKey;
     this.privateWorldStateArchive = worldStateArchive;
+    this.privateStateStorage = privateStateStorage;
   }
 
   public void setPrivateTransactionProcessor(
@@ -100,6 +108,14 @@ public class PrivacyPrecompiledContract extends AbstractPrecompiledContract {
               messageFrame.getMiningBeneficiary(),
               OperationTracer.NO_TRACING,
               messageFrame.getBlockHashLookup());
+
+      BytesValue rlpEncoded = RLP.encode(privateTransaction::writeTo);
+      Bytes32 txHash = Hash.keccak256(rlpEncoded);
+
+      PrivateStateStorage.Updater privateUpdater = privateStateStorage.updater();
+      privateUpdater.putTransactionLogs(txHash, result.getLogs());
+      privateUpdater.putTransactionResult(txHash, result.getOutput());
+      privateUpdater.commit();
 
       return result.getOutput();
     } catch (IOException e) {
