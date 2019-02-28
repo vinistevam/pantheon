@@ -61,24 +61,24 @@ public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase
           .value(Wei.ZERO)
           .payload(
               BytesValue.fromHexString(
-                  "0x608060405234801561001057600080fd5b5060008054600160a06" +
-                      "0020a03191633179055610199806100326000396000f3fe6080" +
-                      "604052600436106100565763ffffffff7c01000000000000000" +
-                      "000000000000000000000000000000000000000006000350416" +
-                      "633fa4f245811461005b5780636057361d1461008257806367e" +
-                      "404ce146100ae575b600080fd5b34801561006757600080fd5b" +
-                      "506100706100ec565b60408051918252519081900360200190f" +
-                      "35b34801561008e57600080fd5b506100ac6004803603602081" +
-                      "10156100a557600080fd5b50356100f2565b005b3480156100b" +
-                      "a57600080fd5b506100c3610151565b6040805173ffffffffff" +
-                      "ffffffffffffffffffffffffffffff909216825251908190036" +
-                      "0200190f35b60025490565b6040805133815260208101839052" +
-                      "81517fc9db20adedc6cf2b5d25252b101ab03e124902a73fcb1" +
-                      "2b753f3d1aaa2d8f9f5929181900390910190a1600255600180" +
-                      "5473ffffffffffffffffffffffffffffffffffffffff1916331" +
-                      "79055565b60015473ffffffffffffffffffffffffffffffffff" +
-                      "ffffff169056fea165627a7a72305820c7f729cb24e05c221f5" +
-                      "aa913700793994656f233fe2ce3b9fd9a505ea17e8d8a0029"))
+                  "0x608060405234801561001057600080fd5b5060008054600160a06"
+                      + "0020a03191633179055610199806100326000396000f3fe6080"
+                      + "604052600436106100565763ffffffff7c01000000000000000"
+                      + "000000000000000000000000000000000000000006000350416"
+                      + "633fa4f245811461005b5780636057361d1461008257806367e"
+                      + "404ce146100ae575b600080fd5b34801561006757600080fd5b"
+                      + "506100706100ec565b60408051918252519081900360200190f"
+                      + "35b34801561008e57600080fd5b506100ac6004803603602081"
+                      + "10156100a557600080fd5b50356100f2565b005b3480156100b"
+                      + "a57600080fd5b506100c3610151565b6040805173ffffffffff"
+                      + "ffffffffffffffffffffffffffffff909216825251908190036"
+                      + "0200190f35b60025490565b6040805133815260208101839052"
+                      + "81517fc9db20adedc6cf2b5d25252b101ab03e124902a73fcb1"
+                      + "2b753f3d1aaa2d8f9f5929181900390910190a1600255600180"
+                      + "5473ffffffffffffffffffffffffffffffffffffffff1916331"
+                      + "79055565b60015473ffffffffffffffffffffffffffffffffff"
+                      + "ffffff169056fea165627a7a72305820c7f729cb24e05c221f5"
+                      + "aa913700793994656f233fe2ce3b9fd9a505ea17e8d8a0029"))
           .sender(SENDER)
           .chainId(2018)
           .privateFrom(
@@ -126,9 +126,7 @@ public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase
           .gasLimit(3000000)
           .to(CONTRACT_ADDRESS)
           .value(Wei.ZERO)
-          .payload(
-              BytesValue.fromHexString(
-                  "0x3fa4f245"))
+          .payload(BytesValue.fromHexString("0x3fa4f245"))
           .sender(SENDER)
           .chainId(2018)
           .privateFrom(
@@ -188,21 +186,32 @@ public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase
 
     final String signedRawSetFunctionTransaction = toRlp(SET_FUNCTION_CALL);
     final String transactionHashSet =
-        minerNode.execute(transactions.createPrivateRawTransaction(signedRawSetFunctionTransaction));
+        minerNode.execute(
+            transactions.createPrivateRawTransaction(signedRawSetFunctionTransaction));
     minerNode.waitUntil(wait.chainHeadHasProgressedByAtLeast(minerNode, 2));
     waitFor(() -> minerNode.verify(eth.expectSuccessfulTransactionReceipt(transactionHashSet)));
     TransactionReceipt txReceiptSet =
         minerNode.execute(transactions.getTransactionReceipt(transactionHash)).get();
 
+    PrivateTransactionReceipt privateTxReceiptSet =
+        minerNode.execute(
+            transactions.getPrivateTransactionReceipt(
+                transactionHashSet, "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="));
 
     final String signedRawGetFunctionTransaction = toRlp(GET_FUNCTION_CALL);
     final String transactionHashGet =
-        minerNode.execute(transactions.createPrivateRawTransaction(signedRawGetFunctionTransaction));
+        minerNode.execute(
+            transactions.createPrivateRawTransaction(signedRawGetFunctionTransaction));
     minerNode.waitUntil(wait.chainHeadHasProgressedByAtLeast(minerNode, 2));
     waitFor(() -> minerNode.verify(eth.expectSuccessfulTransactionReceipt(transactionHashGet)));
     TransactionReceipt txReceiptGet =
         minerNode.execute(transactions.getTransactionReceipt(transactionHash)).get();
 
+    PrivateTransactionReceipt privateTxReceiptGet =
+        minerNode.execute(
+            transactions.getPrivateTransactionReceipt(
+                transactionHashGet, "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="));
+    assertEquals(CONTRACT_ADDRESS.toString(), privateTxReceipt.getContractAddress());
 
     // TODO: fire function call from minerNode and from a non-privy node
 

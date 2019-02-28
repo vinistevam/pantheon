@@ -14,11 +14,12 @@ package tech.pegasys.pantheon.ethereum.mainnet.precompiles.privacy;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import tech.pegasys.pantheon.crypto.Hash;
 import tech.pegasys.pantheon.enclave.Enclave;
 import tech.pegasys.pantheon.enclave.types.ReceiveRequest;
 import tech.pegasys.pantheon.enclave.types.ReceiveResponse;
 import tech.pegasys.pantheon.ethereum.core.Gas;
+import tech.pegasys.pantheon.ethereum.core.Hash;
+import tech.pegasys.pantheon.ethereum.core.MutableWorldState;
 import tech.pegasys.pantheon.ethereum.core.PrivacyParameters;
 import tech.pegasys.pantheon.ethereum.core.WorldUpdater;
 import tech.pegasys.pantheon.ethereum.mainnet.AbstractPrecompiledContract;
@@ -28,6 +29,7 @@ import tech.pegasys.pantheon.ethereum.privacy.PrivateTransaction;
 import tech.pegasys.pantheon.ethereum.privacy.PrivateTransactionProcessor;
 import tech.pegasys.pantheon.ethereum.rlp.BytesValueRLPInput;
 import tech.pegasys.pantheon.ethereum.rlp.RLP;
+import tech.pegasys.pantheon.ethereum.trie.MerklePatriciaTrie;
 import tech.pegasys.pantheon.ethereum.vm.GasCalculator;
 import tech.pegasys.pantheon.ethereum.vm.MessageFrame;
 import tech.pegasys.pantheon.ethereum.vm.OperationTracer;
@@ -37,6 +39,7 @@ import tech.pegasys.pantheon.util.bytes.BytesValue;
 
 import java.io.IOException;
 import java.util.Base64;
+import java.util.HashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -47,6 +50,8 @@ public class PrivacyPrecompiledContract extends AbstractPrecompiledContract {
   private final WorldStateArchive privateWorldStateArchive;
   private final PrivateStateStorage privateStateStorage;
   private PrivateTransactionProcessor privateTransactionProcessor;
+
+  private final HashMap<BytesValue, Hash> temp = new HashMap<>();
 
   private static final Logger LOG = LogManager.getLogger();
 
@@ -97,23 +102,32 @@ public class PrivacyPrecompiledContract extends AbstractPrecompiledContract {
       PrivateTransaction privateTransaction = PrivateTransaction.readFrom(bytesValueRLPInput);
 
       WorldUpdater publicWorldState = messageFrame.getWorldState();
-      WorldUpdater privateWorldState = privateWorldStateArchive.getMutable().updater();
+      // get the last world state root hash - or create a new one
+      BytesValue privacyGroupId = BytesValue.wrap("0".getBytes());
+      Hash lastRootHash =
+          temp.getOrDefault(privacyGroupId, Hash.wrap(MerklePatriciaTrie.EMPTY_TRIE_NODE_HASH));
+      MutableWorldState disposablePrivateState =
+          privateWorldStateArchive.getMutable(lastRootHash).get();
+
+      WorldUpdater privateWorldStateUpdater = disposablePrivateState.updater();
+
       TransactionProcessor.Result result =
           privateTransactionProcessor.processTransaction(
               messageFrame.getBlockchain(),
               publicWorldState,
-              privateWorldState,
+              privateWorldStateUpdater,
               messageFrame.getBlockHeader(),
               privateTransaction,
               messageFrame.getMiningBeneficiary(),
               OperationTracer.NO_TRACING,
               messageFrame.getBlockHashLookup());
 
-      privateWorldState.commit();
+      privateWorldStateUpdater.commit();
+      disposablePrivateState.persist();
+      temp.put(privacyGroupId, disposablePrivateState.rootHash());
 
       BytesValue rlpEncoded = RLP.encode(privateTransaction::writeTo);
-      Bytes32 txHash = Hash.keccak256(rlpEncoded);
-
+      Bytes32 txHash = tech.pegasys.pantheon.crypto.Hash.keccak256(rlpEncoded);
       PrivateStateStorage.Updater privateUpdater = privateStateStorage.updater();
       privateUpdater.putTransactionLogs(txHash, result.getLogs());
       privateUpdater.putTransactionResult(txHash, result.getOutput());
