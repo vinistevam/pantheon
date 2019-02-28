@@ -109,6 +109,8 @@ public class PrivacyPrecompiledContract extends AbstractPrecompiledContract {
               OperationTracer.NO_TRACING,
               messageFrame.getBlockHashLookup());
 
+      privateWorldState.commit();
+
       BytesValue rlpEncoded = RLP.encode(privateTransaction::writeTo);
       Bytes32 txHash = Hash.keccak256(rlpEncoded);
 
