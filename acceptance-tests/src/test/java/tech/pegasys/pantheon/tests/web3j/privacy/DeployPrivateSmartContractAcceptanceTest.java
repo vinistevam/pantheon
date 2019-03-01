@@ -38,6 +38,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.utils.Numeric;
 
 public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase {
 
@@ -46,6 +47,7 @@ public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase
   // Contract address is generated from sender address and transaction nonce
   private static final Address CONTRACT_ADDRESS =
       Address.fromHexString("0x42699a7612a82f1d9c36148af9c77354759b210b");
+  private static final String PUBLIC_KEY = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
 
   private static final Address SENDER =
       Address.fromHexString(
@@ -81,8 +83,7 @@ public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase
                       + "aa913700793994656f233fe2ce3b9fd9a505ea17e8d8a0029"))
           .sender(SENDER)
           .chainId(2018)
-          .privateFrom(
-              BytesValue.wrap("A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=".getBytes(UTF_8)))
+          .privateFrom(BytesValue.wrap(PUBLIC_KEY.getBytes(UTF_8)))
           .privateFor(
               Lists.newArrayList(
                   BytesValue.wrap("Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=".getBytes(UTF_8))))
@@ -106,8 +107,7 @@ public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase
                   "0x6057361d00000000000000000000000000000000000000000000000000000000000003e8"))
           .sender(SENDER)
           .chainId(2018)
-          .privateFrom(
-              BytesValue.wrap("A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=".getBytes(UTF_8)))
+          .privateFrom(BytesValue.wrap(PUBLIC_KEY.getBytes(UTF_8)))
           .privateFor(
               Lists.newArrayList(
                   BytesValue.wrap("Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=".getBytes(UTF_8))))
@@ -129,8 +129,7 @@ public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase
           .payload(BytesValue.fromHexString("0x3fa4f245"))
           .sender(SENDER)
           .chainId(2018)
-          .privateFrom(
-              BytesValue.wrap("A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=".getBytes(UTF_8)))
+          .privateFrom(BytesValue.wrap(PUBLIC_KEY.getBytes(UTF_8)))
           .privateFor(
               Lists.newArrayList(
                   BytesValue.wrap("Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=".getBytes(UTF_8))))
@@ -177,11 +176,8 @@ public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase
         minerNode.execute(transactions.getTransactionReceipt(transactionHash)).get();
 
     assertEquals(Address.DEFAULT_PRIVACY.toString(), txReceipt.getTo());
-
     PrivateTransactionReceipt privateTxReceipt =
-        minerNode.execute(
-            transactions.getPrivateTransactionReceipt(
-                transactionHash, "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="));
+        minerNode.execute(transactions.getPrivateTransactionReceipt(transactionHash, PUBLIC_KEY));
     assertEquals(CONTRACT_ADDRESS.toString(), privateTxReceipt.getContractAddress());
 
     final String signedRawSetFunctionTransaction = toRlp(SET_FUNCTION_CALL);
@@ -190,13 +186,11 @@ public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase
             transactions.createPrivateRawTransaction(signedRawSetFunctionTransaction));
     minerNode.waitUntil(wait.chainHeadHasProgressedByAtLeast(minerNode, 2));
     waitFor(() -> minerNode.verify(eth.expectSuccessfulTransactionReceipt(transactionHashSet)));
-    TransactionReceipt txReceiptSet =
-        minerNode.execute(transactions.getTransactionReceipt(transactionHash)).get();
-
     PrivateTransactionReceipt privateTxReceiptSet =
         minerNode.execute(
-            transactions.getPrivateTransactionReceipt(
-                transactionHashSet, "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="));
+            transactions.getPrivateTransactionReceipt(transactionHashSet, PUBLIC_KEY));
+    String event = privateTxReceiptSet.getLogs().get(0).getData().substring(66, 130);
+    assertEquals(Numeric.decodeQuantity(Numeric.prependHexPrefix(event)), BigInteger.valueOf(1000));
 
     final String signedRawGetFunctionTransaction = toRlp(GET_FUNCTION_CALL);
     final String transactionHashGet =
@@ -204,14 +198,12 @@ public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase
             transactions.createPrivateRawTransaction(signedRawGetFunctionTransaction));
     minerNode.waitUntil(wait.chainHeadHasProgressedByAtLeast(minerNode, 2));
     waitFor(() -> minerNode.verify(eth.expectSuccessfulTransactionReceipt(transactionHashGet)));
-    TransactionReceipt txReceiptGet =
-        minerNode.execute(transactions.getTransactionReceipt(transactionHash)).get();
-
     PrivateTransactionReceipt privateTxReceiptGet =
         minerNode.execute(
-            transactions.getPrivateTransactionReceipt(
-                transactionHashGet, "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="));
+            transactions.getPrivateTransactionReceipt(transactionHashGet, PUBLIC_KEY));
+    BytesValue outputGet = BytesValue.fromHexString(privateTxReceiptGet.getOutput());
     assertEquals(CONTRACT_ADDRESS.toString(), privateTxReceipt.getContractAddress());
+    assertEquals(Numeric.decodeQuantity(outputGet.toString()), BigInteger.valueOf(1000));
 
     // TODO: fire function call from minerNode and from a non-privy node
 

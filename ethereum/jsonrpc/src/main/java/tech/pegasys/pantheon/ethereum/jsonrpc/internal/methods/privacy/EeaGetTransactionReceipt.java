@@ -67,6 +67,15 @@ public class EeaGetTransactionReceipt implements JsonRpcMethod {
     final String publicKey = parameters.required(request.getParams(), 1, String.class);
     final Optional<Transaction> transactionCompleteResult =
         blockchain.getBlockchain().getTransactionByHash(hash);
+    Hash blockHash = blockchain.getBlockchain().getChainHeadBlock().getHash();
+    long blockNumber = blockchain.getBlockchain().getChainHeadBlockNumber();
+    int txIndex =
+        blockchain
+            .getBlockchain()
+            .getBlockBody(blockchain.getBlockchain().getBlockHeader(blockNumber).get().getHash())
+            .get()
+            .getTransactions()
+            .indexOf(transactionCompleteResult.get());
     final PrivateTransactionReceiptResult result =
         transactionCompleteResult
             .map(
@@ -81,20 +90,26 @@ public class EeaGetTransactionReceipt implements JsonRpcMethod {
                             BytesValue.wrap(
                                 Base64.getDecoder().decode(enclaveResponse.getPayload())),
                             false);
-                    PrivateTransaction pt = PrivateTransaction.readFrom(bytesValueRLPInput);
+                    PrivateTransaction privateTransaction =
+                        PrivateTransaction.readFrom(bytesValueRLPInput);
                     final String contractAddress =
-                        Address.contractAddress(pt.getSender(), pt.getNonce()).toString();
-                    // TODO(PRIV): Return internal transaction emitted events and return values
+                        Address.contractAddress(
+                                privateTransaction.getSender(), privateTransaction.getNonce())
+                            .toString();
 
-                    BytesValue rlpEncoded = RLP.encode(pt::writeTo);
+                    BytesValue rlpEncoded = RLP.encode(privateTransaction::writeTo);
                     Bytes32 txHash = tech.pegasys.pantheon.crypto.Hash.keccak256(rlpEncoded);
 
                     return new PrivateTransactionReceiptResult(
                         contractAddress,
-                        pt.getSender().toString(),
-                        pt.getTo().map(Address::toString).orElse(null),
-                        privacyParameters.getPrivateStateStorage().getLogs(txHash).get(),
-                        privacyParameters.getPrivateStateStorage().getEvents(txHash).get());
+                        privateTransaction.getSender().toString(),
+                        privateTransaction.getTo().map(Address::toString).orElse(null),
+                        privacyParameters.getPrivateStateStorage().getEvents(txHash).get(),
+                        privacyParameters.getPrivateStateStorage().getOutput(txHash).get(),
+                        blockHash,
+                        hash,
+                        blockNumber,
+                        txIndex);
                   } catch (IOException e) {
                     return null;
                   }

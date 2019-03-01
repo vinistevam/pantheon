@@ -27,28 +27,32 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   "contractAddress",
   "from",
   "to",
+  "output",
+  "logs",
 })
 public class PrivateTransactionReceiptResult {
 
   private final String contractAddress;
   private final String from;
   private final String to;
-  private final List<Log> logs;
-
-  private final BytesValue events;
+  private final String output;
+  private final List<TransactionReceiptLogResult> logs;
 
   public PrivateTransactionReceiptResult(
       final String contractAddress,
       final String from,
       final String to,
       final List<Log> logs,
-      final BytesValue events) {
+      final BytesValue output,
+      final Hash blockHash,
+      final Hash hash,
+      final long blockNumber,
+      final int txIndex) {
     this.contractAddress = contractAddress;
     this.from = from;
-    // TODO(PRIV): handle logs as in TransactionReceiptResult
     this.to = to;
-    this.logs = logs;
-    this.events = events;
+    this.output = output.toString();
+    this.logs = logReceipts(logs, blockNumber, hash, blockHash, txIndex);
   }
 
   @JsonGetter(value = "contractAddress")
@@ -66,14 +70,14 @@ public class PrivateTransactionReceiptResult {
     return to;
   }
 
-  @JsonGetter(value = "logs")
-  public List<Log> getLogs() {
-    return logs;
+  @JsonGetter(value = "output")
+  public String getOutput() {
+    return output;
   }
 
-  @JsonGetter(value = "events")
-  public BytesValue getEvents() {
-    return events;
+  @JsonGetter(value = "logs")
+  public List<TransactionReceiptLogResult> getLogs() {
+    return logs;
   }
 
   private List<TransactionReceiptLogResult> logReceipts(

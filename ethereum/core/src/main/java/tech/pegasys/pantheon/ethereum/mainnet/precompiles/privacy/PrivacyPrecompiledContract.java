@@ -103,7 +103,7 @@ public class PrivacyPrecompiledContract extends AbstractPrecompiledContract {
 
       WorldUpdater publicWorldState = messageFrame.getWorldState();
       // get the last world state root hash - or create a new one
-      BytesValue privacyGroupId = BytesValue.wrap("0".getBytes());
+      BytesValue privacyGroupId = BytesValue.wrap("0".getBytes(UTF_8));
       Hash lastRootHash =
           temp.getOrDefault(privacyGroupId, Hash.wrap(MerklePatriciaTrie.EMPTY_TRIE_NODE_HASH));
       MutableWorldState disposablePrivateState =

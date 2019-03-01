@@ -35,12 +35,12 @@ public class PrivateKeyValueStorage implements PrivateStateStorage {
   }
 
   @Override
-  public Optional<List<Log>> getLogs(final Bytes32 transactionHash) {
+  public Optional<List<Log>> getEvents(final Bytes32 transactionHash) {
     return get(LOGS_PREFIX, transactionHash).map(this::rlpDecodeLog);
   }
 
   @Override
-  public Optional<BytesValue> getEvents(final Bytes32 transactionHash) {
+  public Optional<BytesValue> getOutput(final Bytes32 transactionHash) {
     return get(EVENTS_PREFIX, transactionHash);
   }
 

@@ -22,9 +22,9 @@ import java.util.Optional;
 
 public interface PrivateStateStorage {
 
-  Optional<List<Log>> getLogs(Bytes32 transactionHash);
+  Optional<List<Log>> getEvents(Bytes32 transactionHash);
 
-  Optional<BytesValue> getEvents(Bytes32 transactionHash);
+  Optional<BytesValue> getOutput(Bytes32 transactionHash);
 
   boolean isPrivateStateAvailable(Bytes32 transactionHash);
 
