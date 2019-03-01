@@ -15,6 +15,7 @@ package tech.pegasys.pantheon.ethereum.core;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import tech.pegasys.pantheon.ethereum.privacy.PrivateStateStorage;
+import tech.pegasys.pantheon.ethereum.privacy.PrivateTransactionStorage;
 import tech.pegasys.pantheon.ethereum.storage.StorageProvider;
 import tech.pegasys.pantheon.ethereum.storage.keyvalue.RocksDbStorageProvider;
 import tech.pegasys.pantheon.ethereum.worldstate.WorldStateArchive;
@@ -42,6 +43,7 @@ public class PrivacyParameters {
   private WorldStateArchive privateWorldStateArchive;
   private StorageProvider privateStorageProvider;
 
+  private PrivateTransactionStorage privateTransactionStorage;
   private PrivateStateStorage privateStateStorage;
 
   public String getPublicKey() {
@@ -105,7 +107,12 @@ public class PrivacyParameters {
     final Path privateStateDbPath = path.resolve(PRIVATE_STATE_DATABASE_PATH);
     final StorageProvider privateStateStorageProvider =
         RocksDbStorageProvider.create(privateStateDbPath, new NoOpMetricsSystem());
+    this.privateTransactionStorage = privateStateStorageProvider.createPrivateTransactionStorage();
     this.privateStateStorage = privateStateStorageProvider.createPrivateStateStorage();
+  }
+
+  public PrivateTransactionStorage getPrivateTransactionStorage() {
+    return privateTransactionStorage;
   }
 
   public PrivateStateStorage getPrivateStateStorage() {

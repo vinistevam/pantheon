@@ -12,24 +12,32 @@
  */
 package tech.pegasys.pantheon.ethereum.privacy;
 
-import tech.pegasys.pantheon.ethereum.core.Hash;
+import tech.pegasys.pantheon.ethereum.core.Log;
+import tech.pegasys.pantheon.ethereum.core.LogSeries;
 import tech.pegasys.pantheon.util.bytes.Bytes32;
 import tech.pegasys.pantheon.util.bytes.BytesValue;
 
+import java.util.List;
 import java.util.Optional;
 
-public interface PrivateStateStorage {
+public interface PrivateTransactionStorage {
 
-  Optional<Hash> getPrivateAccountState(BytesValue privacyId);
+  Optional<List<Log>> getEvents(Bytes32 transactionHash);
 
-  boolean isWorldStateAvailable(Bytes32 rootHash);
+  Optional<BytesValue> getOutput(Bytes32 transactionHash);
 
-  PrivateStateStorage.Updater updater();
+  boolean isPrivateStateAvailable(Bytes32 transactionHash);
+
+  Updater updater();
 
   interface Updater {
 
-    PrivateStateStorage.Updater putPrivateAccountState(BytesValue privacyId, Hash privateStateHash);
+    Updater putTransactionLogs(Bytes32 transactionHash, LogSeries logs);
+
+    Updater putTransactionResult(Bytes32 transactionHash, BytesValue events);
 
     void commit();
+
+    void rollback();
   }
 }

@@ -23,7 +23,7 @@ import tech.pegasys.pantheon.util.bytes.BytesValues;
 import java.util.List;
 import java.util.Optional;
 
-public class PrivateKeyValueStorage implements PrivateStateStorage {
+public class PrivateKeyValueStorage implements PrivateTransactionStorage {
 
   private final KeyValueStorage keyValueStorage;
 
@@ -63,7 +63,7 @@ public class PrivateKeyValueStorage implements PrivateStateStorage {
     return new Updater(keyValueStorage.startTransaction());
   }
 
-  public static class Updater implements PrivateStateStorage.Updater {
+  public static class Updater implements PrivateTransactionStorage.Updater {
 
     private final KeyValueStorage.Transaction transaction;
 
@@ -72,14 +72,14 @@ public class PrivateKeyValueStorage implements PrivateStateStorage {
     }
 
     @Override
-    public PrivateStateStorage.Updater putTransactionLogs(
+    public PrivateTransactionStorage.Updater putTransactionLogs(
         final Bytes32 transactionHash, final LogSeries logs) {
       set(LOGS_PREFIX, transactionHash, RLP.encode(logs::writeTo));
       return this;
     }
 
     @Override
-    public PrivateStateStorage.Updater putTransactionResult(
+    public PrivateTransactionStorage.Updater putTransactionResult(
         final Bytes32 transactionHash, final BytesValue events) {
       set(EVENTS_PREFIX, transactionHash, events);
       return this;

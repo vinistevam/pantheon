@@ -15,6 +15,7 @@ package tech.pegasys.pantheon.ethereum.storage;
 import tech.pegasys.pantheon.ethereum.chain.BlockchainStorage;
 import tech.pegasys.pantheon.ethereum.mainnet.ProtocolSchedule;
 import tech.pegasys.pantheon.ethereum.privacy.PrivateStateStorage;
+import tech.pegasys.pantheon.ethereum.privacy.PrivateTransactionStorage;
 import tech.pegasys.pantheon.ethereum.worldstate.WorldStateStorage;
 
 import java.io.Closeable;
@@ -24,6 +25,8 @@ public interface StorageProvider extends Closeable {
   BlockchainStorage createBlockchainStorage(ProtocolSchedule<?> protocolSchedule);
 
   WorldStateStorage createWorldStateStorage();
+
+  PrivateTransactionStorage createPrivateTransactionStorage();
 
   PrivateStateStorage createPrivateStateStorage();
 }
