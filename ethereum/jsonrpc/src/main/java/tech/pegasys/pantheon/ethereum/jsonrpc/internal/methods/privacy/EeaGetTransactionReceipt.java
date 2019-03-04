@@ -25,6 +25,8 @@ import tech.pegasys.pantheon.ethereum.jsonrpc.internal.JsonRpcRequest;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.methods.JsonRpcMethod;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.parameters.JsonRpcParameter;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.queries.BlockchainQueries;
+import tech.pegasys.pantheon.ethereum.jsonrpc.internal.response.JsonRpcError;
+import tech.pegasys.pantheon.ethereum.jsonrpc.internal.response.JsonRpcErrorResponse;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.response.JsonRpcResponse;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.response.JsonRpcSuccessResponse;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.results.privacy.PrivateTransactionReceiptResult;
@@ -115,6 +117,10 @@ public class EeaGetTransactionReceipt implements JsonRpcMethod {
                   }
                 })
             .orElse(null);
+    if (result == null) {
+      return new JsonRpcErrorResponse(
+          request.getId(), JsonRpcError.PRIVATE_TRANSACTION_RECEIPT_ERROR);
+    }
     return new JsonRpcSuccessResponse(request.getId(), result);
   }
 }

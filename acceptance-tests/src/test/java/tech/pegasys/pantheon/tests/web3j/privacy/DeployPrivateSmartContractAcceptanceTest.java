@@ -170,8 +170,10 @@ public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase
     final String signedRawDeployTransaction = toRlp(DEPLOY_CONTRACT);
     final String transactionHash =
         minerNode.execute(transactions.createPrivateRawTransaction(signedRawDeployTransaction));
-    minerNode.waitUntil(wait.chainHeadHasProgressedByAtLeast(minerNode, 2));
-    waitFor(() -> minerNode.verify(eth.expectSuccessfulTransactionReceipt(transactionHash)));
+    waitFor(
+        90,
+        () ->
+            minerNode.verify(eea.expectSuccessfulTransactionReceipt(transactionHash, PUBLIC_KEY)));
     TransactionReceipt txReceipt =
         minerNode.execute(transactions.getTransactionReceipt(transactionHash)).get();
 
@@ -184,8 +186,11 @@ public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase
     final String transactionHashSet =
         minerNode.execute(
             transactions.createPrivateRawTransaction(signedRawSetFunctionTransaction));
-    minerNode.waitUntil(wait.chainHeadHasProgressedByAtLeast(minerNode, 2));
-    waitFor(() -> minerNode.verify(eth.expectSuccessfulTransactionReceipt(transactionHashSet)));
+    waitFor(
+        90,
+        () ->
+            minerNode.verify(
+                eea.expectSuccessfulTransactionReceipt(transactionHashSet, PUBLIC_KEY)));
     PrivateTransactionReceipt privateTxReceiptSet =
         minerNode.execute(
             transactions.getPrivateTransactionReceipt(transactionHashSet, PUBLIC_KEY));
@@ -196,8 +201,11 @@ public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase
     final String transactionHashGet =
         minerNode.execute(
             transactions.createPrivateRawTransaction(signedRawGetFunctionTransaction));
-    minerNode.waitUntil(wait.chainHeadHasProgressedByAtLeast(minerNode, 2));
-    waitFor(() -> minerNode.verify(eth.expectSuccessfulTransactionReceipt(transactionHashGet)));
+    waitFor(
+        90,
+        () ->
+            minerNode.verify(
+                eea.expectSuccessfulTransactionReceipt(transactionHashGet, PUBLIC_KEY)));
     PrivateTransactionReceipt privateTxReceiptGet =
         minerNode.execute(
             transactions.getPrivateTransactionReceipt(transactionHashGet, PUBLIC_KEY));
