@@ -150,6 +150,7 @@ public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase
     testHarness = OrionTestHarness.create(folder.newFolder().toPath());
 
     final PrivacyParameters privacyParameters = new PrivacyParameters();
+    privacyParameters.setEnabled(true);
     privacyParameters.setUrl(testHarness.clientUrl());
     privacyParameters.setPrivacyAddress(Address.PRIVACY);
     privacyParameters.setPublicKeyUsingFile(testHarness.getConfig().publicKeys().get(0).toFile());
@@ -176,7 +177,6 @@ public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase
             minerNode.verify(eea.expectSuccessfulTransactionReceipt(transactionHash, PUBLIC_KEY)));
     TransactionReceipt txReceipt =
         minerNode.execute(transactions.getTransactionReceipt(transactionHash)).get();
-
     assertEquals(Address.DEFAULT_PRIVACY.toString(), txReceipt.getTo());
     PrivateTransactionReceipt privateTxReceipt =
         minerNode.execute(transactions.getPrivateTransactionReceipt(transactionHash, PUBLIC_KEY));
