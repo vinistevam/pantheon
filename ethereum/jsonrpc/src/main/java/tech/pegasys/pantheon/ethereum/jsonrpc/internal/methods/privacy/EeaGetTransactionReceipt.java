@@ -89,7 +89,8 @@ public class EeaGetTransactionReceipt implements JsonRpcMethod {
       PrivateTransaction privateTransaction = getTransactionFromEnclave(transaction, publicKey);
 
       final String contractAddress =
-          Address.contractAddress(privateTransaction.getSender(), privateTransaction.getNonce())
+          Address.privateContractAddress(
+                  privateTransaction.getSender(), privateTransaction.getNonce(), BytesValue.EMPTY)
               .toString();
 
       BytesValue rlpEncoded = RLP.encode(privateTransaction::writeTo);

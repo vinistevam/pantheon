@@ -177,6 +177,6 @@ public class EeaGetTransactionReceiptTest {
     final PrivateTransactionReceiptResult result =
         (PrivateTransactionReceiptResult) response.getResult();
 
-    assertEquals("0x42699a7612a82f1d9c36148af9c77354759b210b", result.getContractAddress());
+    assertEquals("0x0bac79b78b9866ef11c989ad21a7fcf15f7a18d7", result.getContractAddress());
   }
 }

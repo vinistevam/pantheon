@@ -46,7 +46,7 @@ public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase
 
   // Contract address is generated from sender address and transaction nonce
   private static final Address CONTRACT_ADDRESS =
-      Address.fromHexString("0x42699a7612a82f1d9c36148af9c77354759b210b");
+      Address.fromHexString("0x0bac79b78b9866ef11c989ad21a7fcf15f7a18d7");
   private static final String PUBLIC_KEY = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
 
   private static final Address SENDER =
