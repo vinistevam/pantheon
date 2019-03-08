@@ -25,11 +25,13 @@ import tech.pegasys.pantheon.ethereum.privacy.PrivateTransaction;
 import tech.pegasys.pantheon.ethereum.rlp.BytesValueRLPOutput;
 import tech.pegasys.pantheon.tests.acceptance.dsl.AcceptanceTestBase;
 import tech.pegasys.pantheon.tests.acceptance.dsl.node.PantheonNode;
+import tech.pegasys.pantheon.tests.acceptance.dsl.privacy.ExpectValidPrivateContractDeployedReceipt;
 
 import java.io.IOException;
 
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -39,55 +41,63 @@ public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase
   @ClassRule public static final TemporaryFolder folder = new TemporaryFolder();
 
   private PantheonNode minerNode;
-  private OrionTestHarness testHarness;
+  private static OrionTestHarness testHarness;
+  private static PrivacyParameters privacyParameters;
+  private ExpectValidPrivateContractDeployedReceipt verifier;
+  private final String deployPrivateSmartContract = toRlp(DEPLOY_CONTRACT);
+  private final String executeStoreFunc = toRlp(SET_FUNCTION_CALL);
+  private final String executeGetValueFunc = toRlp(GET_FUNCTION_CALL);
+
+  @BeforeClass
+  public static void setUpOnce() throws Exception {
+    testHarness = OrionTestHarness.create(folder.newFolder().toPath());
+    privacyParameters = setPrivacyParameters();
+  }
+
+  @AfterClass
+  public static void tearDownOnce() {
+    testHarness.getOrion().stop();
+  }
 
   @Before
   public void setUp() throws Exception {
-    testHarness = OrionTestHarness.create(folder.newFolder().toPath());
-    final PrivacyParameters privacyParameters = setPrivacyParameters();
-
     minerNode = pantheon.createPrivateTransactionEnabledMinerNode("miner-node", privacyParameters);
     cluster.start(minerNode);
-  }
-
-  @After
-  public void tearDownOnce() {
-    testHarness.getOrion().stop();
+    verifier =
+        privateContractVerifier.validPrivateTransactionReceipt(
+            minerNode, CONTRACT_ADDRESS.toString());
   }
 
   @Test
   public void deployingMustGiveValidReceipt() {
-
-    // Verify if private contract is deployed
-    final String signedRawDeployTransaction = toRlp(DEPLOY_CONTRACT);
     final String transactionHash =
-        minerNode.execute(transactions.createPrivateRawTransaction(signedRawDeployTransaction));
-    privateContractVerifier
-        .validPrivateTransactionReceipt(minerNode, CONTRACT_ADDRESS.toString())
-        .verifyContractDeployed(transactionHash, PUBLIC_KEY);
+        minerNode.execute(transactions.deployPrivateSmartContract(deployPrivateSmartContract));
 
-    // Verify the values returned in the events when calling a function of privately deployed
-    // contract
-    final String signedRawSetFunctionTransaction = toRlp(SET_FUNCTION_CALL);
-    final String transactionHashSet =
-        minerNode.execute(
-            transactions.createPrivateRawTransaction(signedRawSetFunctionTransaction));
-    privateContractVerifier
-        .validPrivateTransactionReceipt(minerNode, CONTRACT_ADDRESS.toString())
-        .verifyEventsReturned(transactionHashSet, PUBLIC_KEY);
+    verifier.verifyContractDeployed(transactionHash, PUBLIC_KEY);
+  }
 
-    // Verify the values returned in the output when calling a function of privately deployed
-    // contract
-    final String signedRawGetFunctionTransaction = toRlp(GET_FUNCTION_CALL);
-    final String transactionHashGet =
-        minerNode.execute(
-            transactions.createPrivateRawTransaction(signedRawGetFunctionTransaction));
-    privateContractVerifier
-        .validPrivateTransactionReceipt(minerNode, CONTRACT_ADDRESS.toString())
-        .verifyOutputReturned(transactionHashGet, PUBLIC_KEY);
+  @Test
+  public void privateSmartContractMustEmitValues() {
 
-    // TODO: fire function call from minerNode and from a non-privy node
+    minerNode.execute(transactions.deployPrivateSmartContract(deployPrivateSmartContract));
 
+    final String transactionHash =
+        minerNode.execute(transactions.createPrivateRawTransaction(executeStoreFunc));
+
+    verifier.verifyEventsReturned(transactionHash, PUBLIC_KEY);
+  }
+
+  @Test
+  public void privateSmartContractMustReturnValues() {
+
+    minerNode.execute(transactions.deployPrivateSmartContract(deployPrivateSmartContract));
+
+    minerNode.execute(transactions.createPrivateRawTransaction(executeStoreFunc));
+
+    final String transactionHash =
+        minerNode.execute(transactions.createPrivateRawTransaction(executeGetValueFunc));
+
+    verifier.verifyOutputReturned(transactionHash, PUBLIC_KEY);
   }
 
   private String toRlp(final PrivateTransaction transaction) {
@@ -96,7 +106,7 @@ public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase
     return bvrlpo.encoded().toString();
   }
 
-  private PrivacyParameters setPrivacyParameters() throws IOException {
+  private static PrivacyParameters setPrivacyParameters() throws IOException {
     final PrivacyParameters privacyParameters = new PrivacyParameters();
     privacyParameters.setEnabled(true);
     privacyParameters.setUrl(testHarness.clientUrl());
