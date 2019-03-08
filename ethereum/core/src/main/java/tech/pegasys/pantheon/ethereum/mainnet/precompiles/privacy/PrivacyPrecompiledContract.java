@@ -126,6 +126,10 @@ public class PrivacyPrecompiledContract extends AbstractPrecompiledContract {
               OperationTracer.NO_TRACING,
               messageFrame.getBlockHashLookup());
 
+      if (result.isInvalid() || !result.isSuccessful()) {
+        throw new Exception("Unable to process the private transaction");
+      }
+
       privateWorldStateUpdater.commit();
       disposablePrivateState.persist();
       PrivateStateStorage.Updater privateStateUpdater = privateStateStorage.updater();
@@ -142,6 +146,9 @@ public class PrivacyPrecompiledContract extends AbstractPrecompiledContract {
       return result.getOutput();
     } catch (IOException e) {
       LOG.fatal("Enclave threw an unhandled exception.", e);
+      return BytesValue.EMPTY;
+    } catch (Exception e) {
+      LOG.fatal(e.getMessage());
       return BytesValue.EMPTY;
     }
   }
