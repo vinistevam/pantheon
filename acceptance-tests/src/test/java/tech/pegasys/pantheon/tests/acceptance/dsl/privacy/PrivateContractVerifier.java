@@ -13,7 +13,6 @@
 package tech.pegasys.pantheon.tests.acceptance.dsl.privacy;
 
 import tech.pegasys.pantheon.tests.acceptance.dsl.jsonrpc.Eea;
-import tech.pegasys.pantheon.tests.acceptance.dsl.node.PantheonNode;
 import tech.pegasys.pantheon.tests.acceptance.dsl.transaction.Transactions;
 
 public class PrivateContractVerifier {
@@ -27,8 +26,17 @@ public class PrivateContractVerifier {
   }
 
   public ExpectValidPrivateContractDeployedReceipt validPrivateTransactionReceipt(
-      final PantheonNode minerNode, final String contractAddress) {
-    return new ExpectValidPrivateContractDeployedReceipt(
-        minerNode, contractAddress, eea, transactions);
+      final String contractAddress) {
+    return new ExpectValidPrivateContractDeployedReceipt(contractAddress, eea, transactions);
+  }
+
+  public ExpectValidPrivateContractEventsEmitted validPrivateTransactionReceiptReturnsEvents(
+      final String eventValue) {
+    return new ExpectValidPrivateContractEventsEmitted(eventValue, eea, transactions);
+  }
+
+  public ExpectValidPrivateContractValuesReturned validPrivateTransactionReceiptReturnsValues(
+      final String returnValue) {
+    return new ExpectValidPrivateContractValuesReturned(returnValue, eea, transactions);
   }
 }

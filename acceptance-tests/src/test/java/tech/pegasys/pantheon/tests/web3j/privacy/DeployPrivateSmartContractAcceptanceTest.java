@@ -12,107 +12,80 @@
  */
 package tech.pegasys.pantheon.tests.web3j.privacy;
 
-import static tech.pegasys.pantheon.tests.web3j.privacy.ContractCallConstants.CONTRACT_ADDRESS;
-import static tech.pegasys.pantheon.tests.web3j.privacy.ContractCallConstants.DEPLOY_CONTRACT;
-import static tech.pegasys.pantheon.tests.web3j.privacy.ContractCallConstants.GET_FUNCTION_CALL;
-import static tech.pegasys.pantheon.tests.web3j.privacy.ContractCallConstants.PUBLIC_KEY;
-import static tech.pegasys.pantheon.tests.web3j.privacy.ContractCallConstants.SET_FUNCTION_CALL;
-
 import tech.pegasys.orion.testutil.OrionTestHarness;
 import tech.pegasys.pantheon.ethereum.core.Address;
 import tech.pegasys.pantheon.ethereum.core.PrivacyParameters;
-import tech.pegasys.pantheon.ethereum.privacy.PrivateTransaction;
-import tech.pegasys.pantheon.ethereum.rlp.BytesValueRLPOutput;
-import tech.pegasys.pantheon.tests.acceptance.dsl.AcceptanceTestBase;
 import tech.pegasys.pantheon.tests.acceptance.dsl.node.PantheonNode;
-import tech.pegasys.pantheon.tests.acceptance.dsl.privacy.ExpectValidPrivateContractDeployedReceipt;
 
 import java.io.IOException;
 
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
-public class DeployPrivateSmartContractAcceptanceTest extends AcceptanceTestBase {
+public class DeployPrivateSmartContractAcceptanceTest extends PrivateAcceptanceTestBase {
 
-  @ClassRule public static final TemporaryFolder folder = new TemporaryFolder();
+  // Contract address is generated from sender address and transaction nonce
+  protected static final Address CONTRACT_ADDRESS =
+      Address.fromHexString("0x0bac79b78b9866ef11c989ad21a7fcf15f7a18d7");
+  protected static final String PUBLIC_KEY = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
 
   private PantheonNode minerNode;
-  private static OrionTestHarness testHarness;
+  private static OrionTestHarness enclave;
   private static PrivacyParameters privacyParameters;
-  private ExpectValidPrivateContractDeployedReceipt verifier;
-  private final String deployPrivateSmartContract = toRlp(DEPLOY_CONTRACT);
-  private final String executeStoreFunc = toRlp(SET_FUNCTION_CALL);
-  private final String executeGetValueFunc = toRlp(GET_FUNCTION_CALL);
 
   @BeforeClass
   public static void setUpOnce() throws Exception {
-    testHarness = OrionTestHarness.create(folder.newFolder().toPath());
-    privacyParameters = setPrivacyParameters();
+    enclave = createEnclave("orion_key_0.pub", "orion_key_0.key");
+    privacyParameters = getPrivacyParams(enclave);
   }
 
   @AfterClass
   public static void tearDownOnce() {
-    testHarness.getOrion().stop();
+    enclave.getOrion().stop();
   }
 
   @Before
   public void setUp() throws Exception {
     minerNode = pantheon.createPrivateTransactionEnabledMinerNode("miner-node", privacyParameters);
     cluster.start(minerNode);
-    verifier =
-        privateContractVerifier.validPrivateTransactionReceipt(
-            minerNode, CONTRACT_ADDRESS.toString());
   }
 
   @Test
-  public void deployingMustGiveValidReceipt() {
+  public void deployingMustGiveValidReceipt() throws IOException {
     final String transactionHash =
-        minerNode.execute(transactions.deployPrivateSmartContract(deployPrivateSmartContract));
+        minerNode.execute(transactions.deployPrivateSmartContract(getDeploySimpleStorage()));
 
-    verifier.verifyContractDeployed(transactionHash, PUBLIC_KEY);
+    privateContractVerifier
+        .validPrivateTransactionReceipt(CONTRACT_ADDRESS.toString())
+        .verify(minerNode, transactionHash, PUBLIC_KEY);
   }
 
   @Test
-  public void privateSmartContractMustEmitValues() {
-
-    minerNode.execute(transactions.deployPrivateSmartContract(deployPrivateSmartContract));
+  public void privateSmartContractMustEmitEvents() throws IOException {
+    minerNode.execute(transactions.deployPrivateSmartContract(getDeploySimpleStorage()));
 
     final String transactionHash =
-        minerNode.execute(transactions.createPrivateRawTransaction(executeStoreFunc));
+        minerNode.execute(transactions.createPrivateRawTransaction(getExecuteStoreFunc()));
 
-    verifier.verifyEventsReturned(transactionHash, PUBLIC_KEY);
+    privateContractVerifier
+        .validPrivateTransactionReceiptReturnsEvents("1000")
+        .verify(minerNode, transactionHash, PUBLIC_KEY);
   }
 
   @Test
-  public void privateSmartContractMustReturnValues() {
+  public void privateSmartContractMustReturnValues() throws IOException {
 
-    minerNode.execute(transactions.deployPrivateSmartContract(deployPrivateSmartContract));
+    minerNode.execute(transactions.deployPrivateSmartContract(getDeploySimpleStorage()));
 
-    minerNode.execute(transactions.createPrivateRawTransaction(executeStoreFunc));
+    minerNode.execute(transactions.createPrivateRawTransaction(getExecuteStoreFunc()));
 
     final String transactionHash =
-        minerNode.execute(transactions.createPrivateRawTransaction(executeGetValueFunc));
+        minerNode.execute(transactions.createPrivateRawTransaction(getExecuteGetFunc()));
 
-    verifier.verifyOutputReturned(transactionHash, PUBLIC_KEY);
-  }
-
-  private String toRlp(final PrivateTransaction transaction) {
-    BytesValueRLPOutput bvrlpo = new BytesValueRLPOutput();
-    transaction.writeTo(bvrlpo);
-    return bvrlpo.encoded().toString();
-  }
-
-  private static PrivacyParameters setPrivacyParameters() throws IOException {
-    final PrivacyParameters privacyParameters = new PrivacyParameters();
-    privacyParameters.setEnabled(true);
-    privacyParameters.setUrl(testHarness.clientUrl());
-    privacyParameters.setPrivacyAddress(Address.PRIVACY);
-    privacyParameters.setPublicKeyUsingFile(testHarness.getConfig().publicKeys().get(0).toFile());
-    privacyParameters.enablePrivateDB(folder.newFolder("private").toPath());
-    return privacyParameters;
+    privateContractVerifier
+        .validPrivateTransactionReceiptReturnsValues("1000")
+        .verify(minerNode, transactionHash, PUBLIC_KEY);
   }
 }

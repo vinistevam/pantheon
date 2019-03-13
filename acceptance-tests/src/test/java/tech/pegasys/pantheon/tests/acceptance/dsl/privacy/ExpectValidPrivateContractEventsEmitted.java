@@ -19,22 +19,26 @@ import tech.pegasys.pantheon.tests.acceptance.dsl.node.PantheonNode;
 import tech.pegasys.pantheon.tests.acceptance.dsl.transaction.ResponseTypes;
 import tech.pegasys.pantheon.tests.acceptance.dsl.transaction.Transactions;
 
-public class ExpectValidPrivateContractDeployedReceipt
-    extends ExpectValidPrivateTransactionReceipt {
+import java.math.BigInteger;
 
-  private final String contractAddress;
+import org.web3j.utils.Numeric;
 
-  public ExpectValidPrivateContractDeployedReceipt(
-      final String contractAddress, final Eea eea, final Transactions transactions) {
+public class ExpectValidPrivateContractEventsEmitted extends ExpectValidPrivateTransactionReceipt {
+  private final String eventValue;
+
+  public ExpectValidPrivateContractEventsEmitted(
+      final String eventValue, final Eea eea, final Transactions transactions) {
     super(eea, transactions);
-    this.contractAddress = contractAddress;
+    this.eventValue = eventValue;
   }
 
   public void verify(
-      final PantheonNode node, final String transactionHash, final String publicKey) {
+      final PantheonNode node, final String transactionHash, final String PUBLIC_KEY) {
     ResponseTypes.PrivateTransactionReceipt privateTxReceipt =
-        getPrivateTransactionReceipt(node, transactionHash, publicKey);
+        getPrivateTransactionReceipt(node, transactionHash, PUBLIC_KEY);
 
-    assertEquals(contractAddress, privateTxReceipt.getContractAddress());
+    String event = privateTxReceipt.getLogs().get(0).getData().substring(66, 130);
+    assertEquals(
+        Numeric.decodeQuantity(Numeric.prependHexPrefix(event)), new BigInteger(eventValue));
   }
 }

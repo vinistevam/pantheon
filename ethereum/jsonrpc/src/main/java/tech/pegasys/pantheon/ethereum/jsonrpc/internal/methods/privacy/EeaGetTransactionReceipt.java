@@ -79,53 +79,59 @@ public class EeaGetTransactionReceipt implements JsonRpcMethod {
         blockchain.getBlockchain().getTransactionByHash(hash);
 
     PrivateTransactionReceiptResult result;
+
+    if (!transactionCompleteResult.isPresent()) {
+      return new JsonRpcSuccessResponse(request.getId(), null);
+    }
+
+    Transaction transaction = transactionCompleteResult.get();
+
+    Hash blockHash = blockchain.getBlockchain().getChainHeadBlock().getHash();
+    long blockNumber = blockchain.getBlockchain().getChainHeadBlockNumber();
+    int txIndex = getTransactionIndex(blockchain, transaction, blockNumber);
+
+    PrivateTransaction privateTransaction;
     try {
-      Transaction transaction = transactionCompleteResult.orElse(null);
-
-      Hash blockHash = blockchain.getBlockchain().getChainHeadBlock().getHash();
-      long blockNumber = blockchain.getBlockchain().getChainHeadBlockNumber();
-      int txIndex = getTransactionIndex(blockchain, transaction, blockNumber);
-
-      PrivateTransaction privateTransaction = getTransactionFromEnclave(transaction, publicKey);
-
-      final String contractAddress =
-          Address.privateContractAddress(
-                  privateTransaction.getSender(), privateTransaction.getNonce(), BytesValue.EMPTY)
-              .toString();
-
-      BytesValue rlpEncoded = RLP.encode(privateTransaction::writeTo);
-      Bytes32 txHash = tech.pegasys.pantheon.crypto.Hash.keccak256(rlpEncoded);
-
-      List<Log> events =
-          privacyParameters
-              .getPrivateTransactionStorage()
-              .getEvents(txHash)
-              .orElse(Collections.emptyList());
-      BytesValue output =
-          privacyParameters
-              .getPrivateTransactionStorage()
-              .getOutput(txHash)
-              .orElse(BytesValue.wrap(new byte[0]));
-
-      result =
-          new PrivateTransactionReceiptResult(
-              contractAddress,
-              privateTransaction.getSender().toString(),
-              privateTransaction.getTo().map(Address::toString).orElse(null),
-              events,
-              output,
-              blockHash,
-              hash,
-              blockNumber,
-              txIndex);
-
-      LOG.trace("Created Private Transaction from given Transaction Hash");
-
+      privateTransaction = getTransactionFromEnclave(transaction, publicKey);
     } catch (Exception e) {
       LOG.error("Failed to fetch transaction from Enclave with error " + e.getMessage());
       return new JsonRpcErrorResponse(
           request.getId(), JsonRpcError.PRIVATE_TRANSACTION_RECEIPT_ERROR);
     }
+
+    final String contractAddress =
+        Address.privateContractAddress(
+                privateTransaction.getSender(), privateTransaction.getNonce(), BytesValue.EMPTY)
+            .toString();
+
+    BytesValue rlpEncoded = RLP.encode(privateTransaction::writeTo);
+    Bytes32 txHash = tech.pegasys.pantheon.crypto.Hash.keccak256(rlpEncoded);
+
+    List<Log> events =
+        privacyParameters
+            .getPrivateTransactionStorage()
+            .getEvents(txHash)
+            .orElse(Collections.emptyList());
+    BytesValue output =
+        privacyParameters
+            .getPrivateTransactionStorage()
+            .getOutput(txHash)
+            .orElse(BytesValue.wrap(new byte[0]));
+
+    result =
+        new PrivateTransactionReceiptResult(
+            contractAddress,
+            privateTransaction.getSender().toString(),
+            privateTransaction.getTo().map(Address::toString).orElse(null),
+            events,
+            output,
+            blockHash,
+            hash,
+            blockNumber,
+            txIndex);
+
+    LOG.trace("Created Private Transaction from given Transaction Hash");
+
     return new JsonRpcSuccessResponse(request.getId(), result);
   }
 

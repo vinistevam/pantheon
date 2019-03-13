@@ -17,7 +17,6 @@ import tech.pegasys.pantheon.tests.acceptance.dsl.blockchain.Blockchain;
 import tech.pegasys.pantheon.tests.acceptance.dsl.contract.ContractVerifier;
 import tech.pegasys.pantheon.tests.acceptance.dsl.jsonrpc.Admin;
 import tech.pegasys.pantheon.tests.acceptance.dsl.jsonrpc.Clique;
-import tech.pegasys.pantheon.tests.acceptance.dsl.jsonrpc.Eea;
 import tech.pegasys.pantheon.tests.acceptance.dsl.jsonrpc.Eth;
 import tech.pegasys.pantheon.tests.acceptance.dsl.jsonrpc.Ibft;
 import tech.pegasys.pantheon.tests.acceptance.dsl.jsonrpc.Login;
@@ -26,10 +25,8 @@ import tech.pegasys.pantheon.tests.acceptance.dsl.jsonrpc.Perm;
 import tech.pegasys.pantheon.tests.acceptance.dsl.jsonrpc.Web3;
 import tech.pegasys.pantheon.tests.acceptance.dsl.node.cluster.Cluster;
 import tech.pegasys.pantheon.tests.acceptance.dsl.node.factory.PantheonNodeFactory;
-import tech.pegasys.pantheon.tests.acceptance.dsl.privacy.PrivateContractVerifier;
 import tech.pegasys.pantheon.tests.acceptance.dsl.transaction.Transactions;
 import tech.pegasys.pantheon.tests.acceptance.dsl.transaction.clique.CliqueTransactions;
-import tech.pegasys.pantheon.tests.acceptance.dsl.transaction.eea.EeaTransactions;
 import tech.pegasys.pantheon.tests.acceptance.dsl.transaction.eth.EthTransactions;
 import tech.pegasys.pantheon.tests.acceptance.dsl.transaction.ibft.IbftTransactions;
 import tech.pegasys.pantheon.tests.acceptance.dsl.transaction.net.NetTransactions;
@@ -50,23 +47,19 @@ public class AcceptanceTestBase {
   protected final Ibft ibft;
   protected final Web3 web3;
   protected final Eth eth;
-  protected final Eea eea;
   protected final Login login;
   protected final Net net;
   protected final Perm perm;
   protected final Admin admin;
   protected final PantheonNodeFactory pantheon;
   protected final ContractVerifier contractVerifier;
-  protected final PrivateContractVerifier privateContractVerifier;
   protected final WaitConditions wait;
 
   protected AcceptanceTestBase() {
     final EthTransactions ethTransactions = new EthTransactions();
-    final EeaTransactions eeaTransactions = new EeaTransactions();
     accounts = new Accounts(ethTransactions);
     blockchain = new Blockchain(ethTransactions);
     eth = new Eth(ethTransactions);
-    eea = new Eea(eeaTransactions);
     cliqueTransactions = new CliqueTransactions();
     ibftTransactions = new IbftTransactions();
 
@@ -81,7 +74,6 @@ public class AcceptanceTestBase {
     web3 = new Web3(new Web3Transactions());
     pantheon = new PantheonNodeFactory();
     contractVerifier = new ContractVerifier(accounts.getPrimaryBenefactor());
-    privateContractVerifier = new PrivateContractVerifier(eea, transactions);
     wait = new WaitConditions(ethTransactions, cliqueTransactions, ibftTransactions);
   }
 

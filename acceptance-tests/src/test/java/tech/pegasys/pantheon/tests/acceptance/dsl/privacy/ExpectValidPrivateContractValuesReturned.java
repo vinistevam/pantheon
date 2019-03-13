@@ -18,23 +18,27 @@ import tech.pegasys.pantheon.tests.acceptance.dsl.jsonrpc.Eea;
 import tech.pegasys.pantheon.tests.acceptance.dsl.node.PantheonNode;
 import tech.pegasys.pantheon.tests.acceptance.dsl.transaction.ResponseTypes;
 import tech.pegasys.pantheon.tests.acceptance.dsl.transaction.Transactions;
+import tech.pegasys.pantheon.util.bytes.BytesValue;
 
-public class ExpectValidPrivateContractDeployedReceipt
-    extends ExpectValidPrivateTransactionReceipt {
+import java.math.BigInteger;
 
-  private final String contractAddress;
+import org.web3j.utils.Numeric;
 
-  public ExpectValidPrivateContractDeployedReceipt(
-      final String contractAddress, final Eea eea, final Transactions transactions) {
+public class ExpectValidPrivateContractValuesReturned extends ExpectValidPrivateTransactionReceipt {
+  private final String returnValue;
+
+  public ExpectValidPrivateContractValuesReturned(
+      final String returnValue, final Eea eea, final Transactions transactions) {
     super(eea, transactions);
-    this.contractAddress = contractAddress;
+    this.returnValue = returnValue;
   }
 
   public void verify(
-      final PantheonNode node, final String transactionHash, final String publicKey) {
+      final PantheonNode node, final String transactionHash, final String PUBLIC_KEY) {
     ResponseTypes.PrivateTransactionReceipt privateTxReceipt =
-        getPrivateTransactionReceipt(node, transactionHash, publicKey);
+        getPrivateTransactionReceipt(node, transactionHash, PUBLIC_KEY);
 
-    assertEquals(contractAddress, privateTxReceipt.getContractAddress());
+    BytesValue output = BytesValue.fromHexString(privateTxReceipt.getOutput());
+    assertEquals(Numeric.decodeQuantity(output.toString()), new BigInteger(returnValue));
   }
 }
