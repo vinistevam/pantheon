@@ -21,6 +21,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import tech.pegasys.orion.testutil.OrionTestHarness;
+import tech.pegasys.orion.testutil.OrionTestHarnessFactory;
 import tech.pegasys.pantheon.enclave.Enclave;
 import tech.pegasys.pantheon.enclave.types.SendRequest;
 import tech.pegasys.pantheon.enclave.types.SendResponse;
@@ -109,7 +110,9 @@ public class PrivacyPrecompiledContractIntegrationTest {
   public static void setUpOnce() throws Exception {
     folder.create();
 
-    testHarness = OrionTestHarness.create(folder.newFolder().toPath());
+    testHarness =
+        OrionTestHarnessFactory.create(
+            folder.newFolder().toPath(), "orion_key_0.pub", "orion_key_1.key");
 
     enclave = new Enclave(testHarness.clientUrl());
     messageFrame = mock(MessageFrame.class);
@@ -147,7 +150,7 @@ public class PrivacyPrecompiledContractIntegrationTest {
     List<String> publicKeys = testHarness.getPublicKeys();
 
     String s = new String(VALID_PRIVATE_TRANSACTION_RLP_BASE64, UTF_8);
-    SendRequest sc = new SendRequest(s, publicKeys.get(0), Lists.newArrayList(publicKeys.get(1)));
+    SendRequest sc = new SendRequest(s, publicKeys.get(0), Lists.newArrayList(publicKeys.get(0)));
     SendResponse sr = enclave.send(sc);
 
     PrivacyPrecompiledContract privacyPrecompiledContract =
