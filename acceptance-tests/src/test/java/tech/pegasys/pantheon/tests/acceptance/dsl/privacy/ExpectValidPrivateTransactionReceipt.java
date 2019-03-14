@@ -12,18 +12,17 @@
  */
 package tech.pegasys.pantheon.tests.acceptance.dsl.privacy;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
+
 import tech.pegasys.pantheon.tests.acceptance.dsl.jsonrpc.Eea;
 import tech.pegasys.pantheon.tests.acceptance.dsl.node.PantheonNode;
 import tech.pegasys.pantheon.tests.acceptance.dsl.transaction.ResponseTypes;
 import tech.pegasys.pantheon.tests.acceptance.dsl.transaction.Transactions;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
-
 public class ExpectValidPrivateTransactionReceipt extends GetValidPrivateTransactionReceipt {
 
-  public ExpectValidPrivateTransactionReceipt(
-      final Eea eea, final Transactions transactions) {
+  public ExpectValidPrivateTransactionReceipt(final Eea eea, final Transactions transactions) {
     super(eea, transactions);
   }
 
@@ -33,6 +32,5 @@ public class ExpectValidPrivateTransactionReceipt extends GetValidPrivateTransac
         getPrivateTransactionReceipt(node, transactionHash, publicKey);
     assertNotNull(privateTxReceipt);
     assertThat(privateTxReceipt.getFrom()).isNotBlank();
-
   }
 }

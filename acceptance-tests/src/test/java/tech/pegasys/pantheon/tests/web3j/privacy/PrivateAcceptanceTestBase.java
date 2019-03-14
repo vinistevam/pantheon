@@ -69,7 +69,8 @@ public class PrivateAcceptanceTestBase extends AcceptanceTestBase {
     return loadRawTransaction("privacy/single-instance/executeGetFuncRLP.txt");
   }
 
-  static PrivacyParameters getPrivacyParams(final OrionTestHarness testHarness, final String dbFolderName) throws IOException {
+  static PrivacyParameters getPrivacyParams(
+      final OrionTestHarness testHarness, final String dbFolderName) throws IOException {
     final PrivacyParameters privacyParameters = new PrivacyParameters();
     privacyParameters.setEnabled(true);
     privacyParameters.setUrl(testHarness.clientUrl());

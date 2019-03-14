@@ -85,7 +85,8 @@ public class PantheonFactoryConfigurationBuilder {
   }
 
   public PantheonFactoryConfigurationBuilder minGasPrice(long gasPrice) {
-    this.miningParameters = new MiningParameters(
+    this.miningParameters =
+        new MiningParameters(
             miningParameters.getCoinbase().orElse(null),
             Wei.of(gasPrice),
             miningParameters.getExtraData(),

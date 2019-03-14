@@ -70,7 +70,7 @@ public class ThreadPantheonNodeRunner implements PantheonNodeRunner {
               .devMode(node.isDevMode())
               .nodePrivateKeyFile(KeyPairUtil.getDefaultKeyFile(node.homeDirectory()))
               .metricsSystem(noOpMetricsSystem)
-                  .maxPendingTransactions(PendingTransactions.MAX_PENDING_TRANSACTIONS)
+              .maxPendingTransactions(PendingTransactions.MAX_PENDING_TRANSACTIONS)
               .build();
     } catch (final IOException e) {
       throw new RuntimeException("Error building PantheonController", e);
