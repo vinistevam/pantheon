@@ -49,6 +49,14 @@ public class PrivateAcceptanceTestBase extends AcceptanceTestBase {
     return loadRawTransaction("privacy/cluster/deployPrivateSmartContractRLP.txt");
   }
 
+  String getExecuteStoreFuncCluster() throws IOException {
+    return loadRawTransaction("privacy/cluster/executeStoreFuncRLP.txt");
+  }
+
+  String getExecuteGetFuncCluster() throws IOException {
+    return loadRawTransaction("privacy/cluster/executeGetFuncRLP.txt");
+  }
+
   String getDeploySimpleStorage() throws IOException {
     return loadRawTransaction("privacy/single-instance/deployPrivateSmartContractRLP.txt");
   }
