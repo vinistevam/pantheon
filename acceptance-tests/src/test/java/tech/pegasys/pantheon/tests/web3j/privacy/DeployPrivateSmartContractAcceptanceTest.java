@@ -38,12 +38,7 @@ public class DeployPrivateSmartContractAcceptanceTest extends PrivateAcceptanceT
   @BeforeClass
   public static void setUpOnce() throws Exception {
     enclave = createEnclave("orion_key_0.pub", "orion_key_0.key");
-    privacyParameters = getPrivacyParams(enclave);
-  }
-
-  @AfterClass
-  public static void tearDownOnce() {
-    enclave.getOrion().stop();
+    privacyParameters = getPrivacyParams(enclave, "p1");
   }
 
   @Before
@@ -57,8 +52,8 @@ public class DeployPrivateSmartContractAcceptanceTest extends PrivateAcceptanceT
     final String transactionHash =
         minerNode.execute(transactions.deployPrivateSmartContract(getDeploySimpleStorage()));
 
-    privateContractVerifier
-        .validPrivateTransactionReceipt(CONTRACT_ADDRESS.toString())
+    privateTransactionVerifier
+        .validPrivateContractDeployed(CONTRACT_ADDRESS.toString())
         .verify(minerNode, transactionHash, PUBLIC_KEY);
   }
 
@@ -69,8 +64,8 @@ public class DeployPrivateSmartContractAcceptanceTest extends PrivateAcceptanceT
     final String transactionHash =
         minerNode.execute(transactions.createPrivateRawTransaction(getExecuteStoreFunc()));
 
-    privateContractVerifier
-        .validPrivateTransactionReceiptReturnsEvents("1000")
+    privateTransactionVerifier
+        .validEventReturned("1000")
         .verify(minerNode, transactionHash, PUBLIC_KEY);
   }
 
@@ -84,8 +79,13 @@ public class DeployPrivateSmartContractAcceptanceTest extends PrivateAcceptanceT
     final String transactionHash =
         minerNode.execute(transactions.createPrivateRawTransaction(getExecuteGetFunc()));
 
-    privateContractVerifier
-        .validPrivateTransactionReceiptReturnsValues("1000")
+    privateTransactionVerifier
+        .validOutputReturned("1000")
         .verify(minerNode, transactionHash, PUBLIC_KEY);
+  }
+
+  @AfterClass
+  public static void tearDownOnce() {
+    enclave.getOrion().stop();
   }
 }

@@ -18,7 +18,7 @@ import tech.pegasys.pantheon.ethereum.core.Address;
 import tech.pegasys.pantheon.ethereum.core.PrivacyParameters;
 import tech.pegasys.pantheon.tests.acceptance.dsl.AcceptanceTestBase;
 import tech.pegasys.pantheon.tests.acceptance.dsl.jsonrpc.Eea;
-import tech.pegasys.pantheon.tests.acceptance.dsl.privacy.PrivateContractVerifier;
+import tech.pegasys.pantheon.tests.acceptance.dsl.privacy.PrivateTransactionVerifier;
 import tech.pegasys.pantheon.tests.acceptance.dsl.transaction.eea.EeaTransactions;
 
 import java.io.IOException;
@@ -32,17 +32,21 @@ public class PrivateAcceptanceTestBase extends AcceptanceTestBase {
   @ClassRule public static final TemporaryFolder privacy = new TemporaryFolder();
 
   protected final Eea eea;
-  final PrivateContractVerifier privateContractVerifier;
+  final PrivateTransactionVerifier privateTransactionVerifier;
 
   PrivateAcceptanceTestBase() {
     final EeaTransactions eeaTransactions = new EeaTransactions();
     eea = new Eea(eeaTransactions);
-    privateContractVerifier = new PrivateContractVerifier(eea, transactions);
+    privateTransactionVerifier = new PrivateTransactionVerifier(eea, transactions);
   }
 
   static OrionTestHarness createEnclave(
       final String pubKey, final String privKey, final String... othernode) throws Exception {
     return OrionTestHarnessFactory.create(privacy.newFolder().toPath(), pubKey, privKey, othernode);
+  }
+
+  String getDeploySimpleStorageCluster() throws IOException {
+    return loadRawTransaction("privacy/cluster/deployPrivateSmartContractRLP.txt");
   }
 
   String getDeploySimpleStorage() throws IOException {
@@ -57,13 +61,13 @@ public class PrivateAcceptanceTestBase extends AcceptanceTestBase {
     return loadRawTransaction("privacy/single-instance/executeGetFuncRLP.txt");
   }
 
-  static PrivacyParameters getPrivacyParams(final OrionTestHarness testHarness) throws IOException {
+  static PrivacyParameters getPrivacyParams(final OrionTestHarness testHarness, final String dbFolderName) throws IOException {
     final PrivacyParameters privacyParameters = new PrivacyParameters();
     privacyParameters.setEnabled(true);
     privacyParameters.setUrl(testHarness.clientUrl());
     privacyParameters.setPrivacyAddress(Address.PRIVACY);
     privacyParameters.setPublicKeyUsingFile(testHarness.getConfig().publicKeys().get(0).toFile());
-    privacyParameters.enablePrivateDB(privacy.newFolder("private").toPath());
+    privacyParameters.enablePrivateDB(privacy.newFolder(dbFolderName).toPath());
     return privacyParameters;
   }
 

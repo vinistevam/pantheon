@@ -12,29 +12,27 @@
  */
 package tech.pegasys.pantheon.tests.acceptance.dsl.privacy;
 
-import static tech.pegasys.pantheon.tests.acceptance.dsl.WaitUtils.waitFor;
-
 import tech.pegasys.pantheon.tests.acceptance.dsl.jsonrpc.Eea;
 import tech.pegasys.pantheon.tests.acceptance.dsl.node.PantheonNode;
 import tech.pegasys.pantheon.tests.acceptance.dsl.transaction.ResponseTypes;
 import tech.pegasys.pantheon.tests.acceptance.dsl.transaction.Transactions;
 
-public abstract class ExpectValidPrivateTransactionReceipt {
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
 
-  private Eea eea;
-  private Transactions transactions;
+public class ExpectValidPrivateTransactionReceipt extends GetValidPrivateTransactionReceipt {
 
-  ExpectValidPrivateTransactionReceipt(final Eea eea, final Transactions transactions) {
-    this.eea = eea;
-    this.transactions = transactions;
+  public ExpectValidPrivateTransactionReceipt(
+      final Eea eea, final Transactions transactions) {
+    super(eea, transactions);
   }
 
-  ResponseTypes.PrivateTransactionReceipt getPrivateTransactionReceipt(
+  public void verify(
       final PantheonNode node, final String transactionHash, final String publicKey) {
-
-    waitFor(() -> node.verify(eea.expectSuccessfulTransactionReceipt(transactionHash, publicKey)));
     ResponseTypes.PrivateTransactionReceipt privateTxReceipt =
-        node.execute(transactions.getPrivateTransactionReceipt(transactionHash, publicKey));
-    return privateTxReceipt;
+        getPrivateTransactionReceipt(node, transactionHash, publicKey);
+    assertNotNull(privateTxReceipt);
+    assertThat(privateTxReceipt.getFrom()).isNotBlank();
+
   }
 }

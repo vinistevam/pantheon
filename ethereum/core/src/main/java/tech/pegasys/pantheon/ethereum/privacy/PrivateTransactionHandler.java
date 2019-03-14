@@ -12,6 +12,8 @@
  */
 package tech.pegasys.pantheon.ethereum.privacy;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tech.pegasys.pantheon.enclave.Enclave;
 import tech.pegasys.pantheon.enclave.types.SendRequest;
 import tech.pegasys.pantheon.enclave.types.SendResponse;
@@ -30,6 +32,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class PrivateTransactionHandler {
+
+  private static final Logger LOG = LogManager.getLogger();
 
   private final Enclave enclave;
   private final Address privacyPrecompileAddress;
@@ -62,6 +66,8 @@ public class PrivateTransactionHandler {
         privateTransaction.getPrivateFor().stream()
             .map(BytesValues::asString)
             .collect(Collectors.toList());
+
+    privateFor.add(BytesValues.asString(privateTransaction.getPrivateFrom()));
 
     final BytesValueRLPOutput bvrlp = new BytesValueRLPOutput();
     privateTransaction.writeTo(bvrlp);
