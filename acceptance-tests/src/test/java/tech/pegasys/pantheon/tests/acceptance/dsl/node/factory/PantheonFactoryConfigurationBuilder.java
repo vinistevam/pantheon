@@ -17,6 +17,7 @@ import static java.util.Collections.singletonList;
 import tech.pegasys.pantheon.ethereum.core.MiningParameters;
 import tech.pegasys.pantheon.ethereum.core.MiningParametersTestBuilder;
 import tech.pegasys.pantheon.ethereum.core.PrivacyParameters;
+import tech.pegasys.pantheon.ethereum.core.Wei;
 import tech.pegasys.pantheon.ethereum.jsonrpc.JsonRpcConfiguration;
 import tech.pegasys.pantheon.ethereum.jsonrpc.RpcApis;
 import tech.pegasys.pantheon.ethereum.jsonrpc.websocket.WebSocketConfiguration;
@@ -80,6 +81,15 @@ public class PantheonFactoryConfigurationBuilder {
     this.jsonRpcConfiguration.addRpcApi(RpcApis.EEA);
     this.privacyParameters = privacyParameters;
     this.privacyParameters.setEnabled(true);
+    return this;
+  }
+
+  public PantheonFactoryConfigurationBuilder minGasPrice(long gasPrice) {
+    this.miningParameters = new MiningParameters(
+            miningParameters.getCoinbase().orElse(null),
+            Wei.of(gasPrice),
+            miningParameters.getExtraData(),
+            miningParameters.isMiningEnabled());
     return this;
   }
 

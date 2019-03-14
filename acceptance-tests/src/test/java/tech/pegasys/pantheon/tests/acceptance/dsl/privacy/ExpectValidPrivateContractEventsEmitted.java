@@ -39,6 +39,6 @@ public class ExpectValidPrivateContractEventsEmitted extends GetValidPrivateTran
 
     String event = privateTxReceipt.getLogs().get(0).getData().substring(66, 130);
     assertEquals(
-        Numeric.decodeQuantity(Numeric.prependHexPrefix(event)), new BigInteger(eventValue));
+       new BigInteger(eventValue),  Numeric.decodeQuantity(Numeric.prependHexPrefix(event)));
   }
 }

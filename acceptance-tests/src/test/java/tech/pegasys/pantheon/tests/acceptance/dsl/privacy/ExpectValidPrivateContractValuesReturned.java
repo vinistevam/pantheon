@@ -39,6 +39,6 @@ public class ExpectValidPrivateContractValuesReturned extends GetValidPrivateTra
         getPrivateTransactionReceipt(node, transactionHash, publicKey);
 
     BytesValue output = BytesValue.fromHexString(privateTxReceipt.getOutput());
-    assertEquals(Numeric.decodeQuantity(output.toString()), new BigInteger(returnValue));
+    assertEquals(new BigInteger(returnValue), Numeric.decodeQuantity(output.toString()));
   }
 }

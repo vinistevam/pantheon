@@ -60,6 +60,7 @@ public class EeaSendRawTransactionTest {
                   + "49644f6e766966746a69697a706a52742b4854754642733d8a72"
                   + "657374726963746564";
 
+
   private static final Transaction PUBLIC_TRANSACTION =
       new Transaction(
           0L,

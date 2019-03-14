@@ -67,6 +67,7 @@ public class PrivateTransactionHandler {
             .map(BytesValues::asString)
             .collect(Collectors.toList());
 
+    // FIXME: Orion should concatenate to and from - not it pantheon
     privateFor.add(BytesValues.asString(privateTransaction.getPrivateFrom()));
 
     final BytesValueRLPOutput bvrlp = new BytesValueRLPOutput();
