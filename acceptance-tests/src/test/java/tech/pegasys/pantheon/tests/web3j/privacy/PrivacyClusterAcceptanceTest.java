@@ -66,7 +66,7 @@ public class PrivacyClusterAcceptanceTest extends PrivateAcceptanceTestBase {
 
   @Before
   public void setUp() throws Exception {
-    node1 = pantheon.createPrivateTransactionEnabledMinerNode("node1", privacyParameters1);
+    node1 = pantheon.createPrivateTransactionEnabledNode("node1", privacyParameters1);
     node2 = pantheon.createPrivateTransactionEnabledMinerNode("node2", privacyParameters2);
 //    node3 = pantheon.createPrivateTransactionEnabledMinerNode("node3", privacyParameters3);
     cluster.start(node1, node2);
@@ -74,30 +74,21 @@ public class PrivacyClusterAcceptanceTest extends PrivateAcceptanceTestBase {
 
   @Test
   public void node2CanSeeContract() throws IOException {
-    node1.waitUntil(wait.chainHeadIsAtLeast(20));
     final String transactionHash =
             node1.execute(transactions.deployPrivateSmartContract(getDeploySimpleStorageCluster()));
-
 
     privateTransactionVerifier
             .validPrivateContractDeployed(CONTRACT_ADDRESS.toString())
             .verify(node2, transactionHash, PUBLIC_KEY_2);
   }
 
-  private String toRlp(final PrivateTransaction transaction) {
-    BytesValueRLPOutput bvrlpo = new BytesValueRLPOutput();
-    transaction.writeTo(bvrlpo);
-    return bvrlpo.encoded().toString();
-  }
-
-
-
   @Test
   public void node2CanExecuteContract() throws IOException {
-    node1.execute(transactions.deployPrivateSmartContract(getDeploySimpleStorage()));
+
+    node1.execute(transactions.deployPrivateSmartContract(getDeploySimpleStorageCluster()));
 
     final String transactionHash =
-            node2.execute(transactions.createPrivateRawTransaction(getExecuteStoreFunc()));
+            node2.execute(transactions.createPrivateRawTransaction(getExecuteStoreFuncCluster()));
 
     privateTransactionVerifier
             .validEventReturned("1000")
@@ -107,12 +98,12 @@ public class PrivacyClusterAcceptanceTest extends PrivateAcceptanceTestBase {
   @Test
   public void node2CanSeePrivateTransactionReceipt() throws IOException {
 
-    node1.execute(transactions.deployPrivateSmartContract(getDeploySimpleStorage()));
+    node1.execute(transactions.deployPrivateSmartContract(getDeploySimpleStorageCluster()));
 
-    node2.execute(transactions.createPrivateRawTransaction(getExecuteStoreFunc()));
+    node2.execute(transactions.createPrivateRawTransaction(getExecuteStoreFuncCluster()));
 
     final String transactionHash =
-            node2.execute(transactions.createPrivateRawTransaction(getExecuteGetFunc()));
+            node2.execute(transactions.createPrivateRawTransaction(getExecuteGetFuncCluster()));
 
     privateTransactionVerifier
             .validOutputReturned("1000")
