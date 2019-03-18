@@ -79,25 +79,27 @@ public class PantheonNodeFactory {
   }
 
   public PantheonNode createPrivateTransactionEnabledNode(
-      final String name, final PrivacyParameters privacyParameters, final String keyFile) throws IOException {
+      final String name, final PrivacyParameters privacyParameters, final String keyFile)
+      throws IOException {
     return create(
         new PantheonFactoryConfigurationBuilder()
             .setName(name)
             .jsonRpcEnabled()
-                .setKeyFile(keyFile)
-                .enablePrivateTransactions(privacyParameters)
+            .setKeyFile(keyFile)
+            .enablePrivateTransactions(privacyParameters)
             .webSocketEnabled()
             .build());
   }
 
   public PantheonNode createPrivateTransactionEnabledMinerNode(
-      final String name, final PrivacyParameters privacyParameters, final String keyFile) throws IOException {
+      final String name, final PrivacyParameters privacyParameters, final String keyFile)
+      throws IOException {
     return create(
         new PantheonFactoryConfigurationBuilder()
             .setName(name)
             .miningEnabled()
             .minGasPrice(0)
-                .setKeyFile(keyFile)
+            .setKeyFile(keyFile)
             .jsonRpcEnabled()
             .enablePrivateTransactions(privacyParameters)
             .webSocketEnabled()

@@ -154,8 +154,7 @@ public class PantheonFactoryConfigurationBuilder {
     return this;
   }
 
-  public PantheonFactoryConfigurationBuilder setKeyFile(
-          final String keyFile) {
+  public PantheonFactoryConfigurationBuilder setKeyFile(final String keyFile) {
     this.keyFile = keyFile;
     return this;
   }

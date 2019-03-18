@@ -12,7 +12,6 @@
  */
 package tech.pegasys.pantheon.ethereum.privacy;
 
-import com.google.common.base.Charsets;
 import tech.pegasys.pantheon.crypto.SECP256K1;
 import tech.pegasys.pantheon.enclave.Enclave;
 import tech.pegasys.pantheon.enclave.types.SendRequest;
@@ -25,12 +24,11 @@ import tech.pegasys.pantheon.util.bytes.BytesValue;
 import tech.pegasys.pantheon.util.bytes.BytesValues;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.google.common.base.Charsets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -46,10 +44,13 @@ public class PrivateTransactionHandler {
     this(
         new Enclave(privacyParameters.getUrl()),
         Address.privacyPrecompiled(privacyParameters.getPrivacyAddress()),
-            privacyParameters.getNodeKeyPair());
+        privacyParameters.getNodeKeyPair());
   }
 
-  public PrivateTransactionHandler(final Enclave enclave, final Address privacyPrecompileAddress, final SECP256K1.KeyPair nodeKeyPair) {
+  public PrivateTransactionHandler(
+      final Enclave enclave,
+      final Address privacyPrecompileAddress,
+      final SECP256K1.KeyPair nodeKeyPair) {
     this.enclave = enclave;
     this.privacyPrecompileAddress = privacyPrecompileAddress;
     this.nodeKeyPair = nodeKeyPair;
@@ -92,13 +93,13 @@ public class PrivateTransactionHandler {
       final String transactionEnclaveKey, final PrivateTransaction privateTransaction) {
 
     return Transaction.builder()
-            .nonce(privateTransaction.getNonce())
-            .gasPrice(privateTransaction.getGasPrice())
-            .gasLimit(privateTransaction.getGasLimit())
-            .to(privacyPrecompileAddress)
-            .value(privateTransaction.getValue())
-            .payload(BytesValue.wrap(transactionEnclaveKey.getBytes(Charsets.UTF_8)))
-            .sender(privateTransaction.getSender())
-            .signAndBuild(nodeKeyPair);
+        .nonce(privateTransaction.getNonce())
+        .gasPrice(privateTransaction.getGasPrice())
+        .gasLimit(privateTransaction.getGasLimit())
+        .to(privacyPrecompileAddress)
+        .value(privateTransaction.getValue())
+        .payload(BytesValue.wrap(transactionEnclaveKey.getBytes(Charsets.UTF_8)))
+        .sender(privateTransaction.getSender())
+        .signAndBuild(nodeKeyPair);
   }
 }

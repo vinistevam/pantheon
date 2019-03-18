@@ -12,15 +12,12 @@
  */
 package tech.pegasys.pantheon.tests.web3j.privacy;
 
-import org.junit.After;
 import tech.pegasys.orion.testutil.OrionTestHarness;
 import tech.pegasys.pantheon.ethereum.core.Address;
-import tech.pegasys.pantheon.ethereum.core.PrivacyParameters;
 import tech.pegasys.pantheon.tests.acceptance.dsl.node.PantheonNode;
 
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class DeployPrivateSmartContractAcceptanceTest extends PrivateAcceptanceTestBase {
@@ -36,7 +33,9 @@ public class DeployPrivateSmartContractAcceptanceTest extends PrivateAcceptanceT
   @Before
   public void setUp() throws Exception {
     enclave = createEnclave("orion_key_0.pub", "orion_key_0.key");
-    minerNode = pantheon.createPrivateTransactionEnabledMinerNode("miner-node", getPrivacyParams(enclave), "key");
+    minerNode =
+        pantheon.createPrivateTransactionEnabledMinerNode(
+            "miner-node", getPrivacyParams(enclave), "key");
     cluster.start(minerNode);
   }
 

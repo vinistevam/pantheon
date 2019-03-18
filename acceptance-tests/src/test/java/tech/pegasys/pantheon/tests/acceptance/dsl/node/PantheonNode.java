@@ -16,7 +16,6 @@ import static java.util.Collections.unmodifiableList;
 import static net.consensys.cava.io.file.Files.copyResource;
 import static org.apache.logging.log4j.LogManager.getLogger;
 
-import com.google.common.io.Resources;
 import tech.pegasys.pantheon.controller.KeyPairUtil;
 import tech.pegasys.pantheon.crypto.SECP256K1.KeyPair;
 import tech.pegasys.pantheon.ethereum.core.Address;

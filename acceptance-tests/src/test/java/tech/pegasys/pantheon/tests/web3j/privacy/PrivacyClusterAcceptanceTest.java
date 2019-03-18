@@ -12,13 +12,11 @@
  */
 package tech.pegasys.pantheon.tests.web3j.privacy;
 
-import org.junit.After;
 import tech.pegasys.orion.testutil.OrionTestHarness;
 import tech.pegasys.pantheon.ethereum.core.Address;
 import tech.pegasys.pantheon.tests.acceptance.dsl.node.PantheonNode;
 
-import java.io.IOException;
-
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,8 +39,11 @@ public class PrivacyClusterAcceptanceTest extends PrivateAcceptanceTestBase {
   public void setUp() throws Exception {
     enclave1 = createEnclave("orion_key_0.pub", "orion_key_0.key");
     enclave2 = createEnclave("orion_key_1.pub", "orion_key_1.key", enclave1.nodeUrl());
-    node1 = pantheon.createPrivateTransactionEnabledMinerNode("node1", getPrivacyParams(enclave1), "key");
-    node2 = pantheon.createPrivateTransactionEnabledNode("node2", getPrivacyParams(enclave2), "key1");
+    node1 =
+        pantheon.createPrivateTransactionEnabledMinerNode(
+            "node1", getPrivacyParams(enclave1), "key");
+    node2 =
+        pantheon.createPrivateTransactionEnabledNode("node2", getPrivacyParams(enclave2), "key1");
     //    node3 = pantheon.createPrivateTransactionEnabledMinerNode("node3", privacyParameters3);
     cluster.start(node1, node2);
   }
@@ -73,19 +74,21 @@ public class PrivacyClusterAcceptanceTest extends PrivateAcceptanceTestBase {
   @Test
   public void node2CanSeePrivateTransactionReceipt() {
 
-    String transactionHash = node1.execute(transactions.deployPrivateSmartContract(getDeployEventEmitterCluster()));
+    String transactionHash =
+        node1.execute(transactions.deployPrivateSmartContract(getDeployEventEmitterCluster()));
 
     privateTransactionVerifier
-            .validPrivateContractDeployed(CONTRACT_ADDRESS.toString())
-            .verify(node2, transactionHash, PUBLIC_KEY_2);
+        .validPrivateContractDeployed(CONTRACT_ADDRESS.toString())
+        .verify(node2, transactionHash, PUBLIC_KEY_2);
 
-    transactionHash =node2.execute(transactions.createPrivateRawTransaction(getExecuteStoreFuncCluster()));
+    transactionHash =
+        node2.execute(transactions.createPrivateRawTransaction(getExecuteStoreFuncCluster()));
 
     privateTransactionVerifier
-            .validEventReturned("1000")
-            .verify(node1, transactionHash, PUBLIC_KEY_1);
+        .validEventReturned("1000")
+        .verify(node1, transactionHash, PUBLIC_KEY_1);
 
-    transactionHash  =
+    transactionHash =
         node2.execute(transactions.createPrivateRawTransaction(getExecuteGetFuncCluster()));
 
     privateTransactionVerifier

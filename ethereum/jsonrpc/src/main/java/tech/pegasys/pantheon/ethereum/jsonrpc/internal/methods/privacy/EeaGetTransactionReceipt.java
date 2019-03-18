@@ -99,9 +99,12 @@ public class EeaGetTransactionReceipt implements JsonRpcMethod {
           request.getId(), JsonRpcError.PRIVATE_TRANSACTION_RECEIPT_ERROR);
     }
 
-    final String contractAddress = !privateTransaction.getTo().isPresent() ? Address.privateContractAddress(
-            privateTransaction.getSender(), privateTransaction.getNonce(), BytesValue.EMPTY)
-            .toString() : null;
+    final String contractAddress =
+        !privateTransaction.getTo().isPresent()
+            ? Address.privateContractAddress(
+                    privateTransaction.getSender(), privateTransaction.getNonce(), BytesValue.EMPTY)
+                .toString()
+            : null;
 
     BytesValue rlpEncoded = RLP.encode(privateTransaction::writeTo);
     Bytes32 txHash = tech.pegasys.pantheon.crypto.Hash.keccak256(rlpEncoded);
