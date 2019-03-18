@@ -16,6 +16,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static tech.pegasys.pantheon.cli.DefaultCommandValues.getDefaultPantheonDataPath;
 import static tech.pegasys.pantheon.cli.NetworkName.MAINNET;
+import static tech.pegasys.pantheon.controller.KeyPairUtil.loadKeyPair;
 import static tech.pegasys.pantheon.ethereum.jsonrpc.JsonRpcConfiguration.DEFAULT_JSON_RPC_PORT;
 import static tech.pegasys.pantheon.ethereum.jsonrpc.RpcApis.DEFAULT_JSON_RPC_APIS;
 import static tech.pegasys.pantheon.ethereum.jsonrpc.websocket.WebSocketConfiguration.DEFAULT_WEBSOCKET_PORT;
@@ -810,11 +811,12 @@ public class PantheonCommand implements DefaultCommandValues, Runnable {
       privacyParameters.setEnabled(true);
       privacyParameters.setUrl(privacyUrl.toString());
       if (privacyPublicKeyFile() != null) {
-        privacyParameters.setPublicKeyUsingFile(privacyPublicKeyFile());
+        privacyParameters.setEnclavePublicKeyUsingFile(privacyPublicKeyFile());
       } else {
         throw new ParameterException(
             commandLine, "Please specify Enclave public key file path to enable privacy");
       }
+      privacyParameters.setNodeKeyPair(loadKeyPair(nodePrivateKeyFile()));
       privacyParameters.setPrivacyAddress(privacyPrecompiledAddress);
       privacyParameters.enablePrivateDB(dataDir());
     }

@@ -31,6 +31,7 @@ class PantheonFactoryConfiguration {
   private final WebSocketConfiguration webSocketConfiguration;
   private final MetricsConfiguration metricsConfiguration;
   private final Optional<PermissioningConfiguration> permissioningConfiguration;
+  private String keyFile;
   private final boolean devMode;
   private final GenesisConfigProvider genesisConfigProvider;
   private final boolean p2pEnabled;
@@ -45,6 +46,7 @@ class PantheonFactoryConfiguration {
       final WebSocketConfiguration webSocketConfiguration,
       final MetricsConfiguration metricsConfiguration,
       final Optional<PermissioningConfiguration> permissioningConfiguration,
+      final String keyFile,
       final boolean devMode,
       final GenesisConfigProvider genesisConfigProvider,
       final boolean p2pEnabled,
@@ -57,6 +59,7 @@ class PantheonFactoryConfiguration {
     this.webSocketConfiguration = webSocketConfiguration;
     this.metricsConfiguration = metricsConfiguration;
     this.permissioningConfiguration = permissioningConfiguration;
+    this.keyFile = keyFile;
     this.devMode = devMode;
     this.genesisConfigProvider = genesisConfigProvider;
     this.p2pEnabled = p2pEnabled;
@@ -90,6 +93,10 @@ class PantheonFactoryConfiguration {
 
   public Optional<PermissioningConfiguration> getPermissioningConfiguration() {
     return permissioningConfiguration;
+  }
+
+  public String getKeyFile() {
+    return keyFile;
   }
 
   public boolean isDevMode() {

@@ -40,6 +40,7 @@ public class PantheonFactoryConfigurationBuilder {
   private WebSocketConfiguration webSocketConfiguration = WebSocketConfiguration.createDefault();
   private MetricsConfiguration metricsConfiguration = MetricsConfiguration.createDefault();
   private Optional<PermissioningConfiguration> permissioningConfiguration = Optional.empty();
+  private String keyFile;
   private boolean devMode = true;
   private GenesisConfigProvider genesisConfigProvider = ignore -> Optional.empty();
   private Boolean p2pEnabled = true;
@@ -153,6 +154,12 @@ public class PantheonFactoryConfigurationBuilder {
     return this;
   }
 
+  public PantheonFactoryConfigurationBuilder setKeyFile(
+          final String keyFile) {
+    this.keyFile = keyFile;
+    return this;
+  }
+
   public PantheonFactoryConfigurationBuilder setDevMode(final boolean devMode) {
     this.devMode = devMode;
     return this;
@@ -183,6 +190,7 @@ public class PantheonFactoryConfigurationBuilder {
         webSocketConfiguration,
         metricsConfiguration,
         permissioningConfiguration,
+        keyFile,
         devMode,
         genesisConfigProvider,
         p2pEnabled,

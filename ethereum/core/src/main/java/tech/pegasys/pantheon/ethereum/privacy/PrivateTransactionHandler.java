@@ -12,6 +12,8 @@
  */
 package tech.pegasys.pantheon.ethereum.privacy;
 
+import com.google.common.base.Charsets;
+import tech.pegasys.pantheon.crypto.SECP256K1;
 import tech.pegasys.pantheon.enclave.Enclave;
 import tech.pegasys.pantheon.enclave.types.SendRequest;
 import tech.pegasys.pantheon.enclave.types.SendResponse;
@@ -38,24 +40,30 @@ public class PrivateTransactionHandler {
 
   private final Enclave enclave;
   private final Address privacyPrecompileAddress;
+  private final SECP256K1.KeyPair nodeKeyPair;
 
   public PrivateTransactionHandler(final PrivacyParameters privacyParameters) {
     this(
         new Enclave(privacyParameters.getUrl()),
-        Address.privacyPrecompiled(privacyParameters.getPrivacyAddress()));
+        Address.privacyPrecompiled(privacyParameters.getPrivacyAddress()),
+            privacyParameters.getNodeKeyPair());
   }
 
-  public PrivateTransactionHandler(final Enclave enclave, final Address privacyPrecompileAddress) {
+  public PrivateTransactionHandler(final Enclave enclave, final Address privacyPrecompileAddress, final SECP256K1.KeyPair nodeKeyPair) {
     this.enclave = enclave;
     this.privacyPrecompileAddress = privacyPrecompileAddress;
+    this.nodeKeyPair = nodeKeyPair;
   }
 
   public Transaction handle(final PrivateTransaction privateTransaction) throws IOException {
+    LOG.trace("Handling private transaction");
     final SendRequest sendRequest = createSendRequest(privateTransaction);
     final SendResponse sendResponse;
     try {
+      LOG.trace("Storing private transaction in enclave");
       sendResponse = enclave.send(sendRequest);
     } catch (IOException e) {
+      LOG.error("Failed to store private transaction in enclave", e);
       throw e;
     }
 
@@ -83,15 +91,14 @@ public class PrivateTransactionHandler {
   private Transaction createPrivacyMarkerTransaction(
       final String transactionEnclaveKey, final PrivateTransaction privateTransaction) {
 
-    return new Transaction(
-        privateTransaction.getNonce(),
-        privateTransaction.getGasPrice(),
-        privateTransaction.getGasLimit(),
-        Optional.of(privacyPrecompileAddress),
-        privateTransaction.getValue(),
-        privateTransaction.getSignature(),
-        BytesValue.wrap(transactionEnclaveKey.getBytes(Charset.defaultCharset())),
-        privateTransaction.getSender(),
-        privateTransaction.getChainId().getAsInt());
+    return Transaction.builder()
+            .nonce(privateTransaction.getNonce())
+            .gasPrice(privateTransaction.getGasPrice())
+            .gasLimit(privateTransaction.getGasLimit())
+            .to(privacyPrecompileAddress)
+            .value(privateTransaction.getValue())
+            .payload(BytesValue.wrap(transactionEnclaveKey.getBytes(Charsets.UTF_8)))
+            .sender(privateTransaction.getSender())
+            .signAndBuild(nodeKeyPair);
   }
 }
