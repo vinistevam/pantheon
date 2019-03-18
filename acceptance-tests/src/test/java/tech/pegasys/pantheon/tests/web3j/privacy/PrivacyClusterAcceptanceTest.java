@@ -12,6 +12,7 @@
  */
 package tech.pegasys.pantheon.tests.web3j.privacy;
 
+import org.junit.After;
 import tech.pegasys.orion.testutil.OrionTestHarness;
 import tech.pegasys.pantheon.ethereum.core.Address;
 import tech.pegasys.pantheon.ethereum.core.PrivacyParameters;
@@ -42,22 +43,12 @@ public class PrivacyClusterAcceptanceTest extends PrivateAcceptanceTestBase {
   private static PrivacyParameters privacyParameters2;
   //  private static PrivacyParameters privacyParameters3;
 
-  @BeforeClass
-  public static void setUpOnce() throws Exception {
-    enclave1 = createEnclave("orion_key_0.pub", "orion_key_0.key");
-    enclave2 = createEnclave("orion_key_1.pub", "orion_key_1.key", enclave1.nodeUrl());
-    //    enclave3 =
-    //        createEnclave("orion_key_2.pub", "orion_key_2.key", enclave1.nodeUrl(),
-    // enclave2.nodeUrl());
-    privacyParameters1 = getPrivacyParams(enclave1, "p1");
-    privacyParameters2 = getPrivacyParams(enclave2, "p2");
-    //    privacyParameters3 = getPrivacyParams(enclave3, "p3");
-  }
-
   @Before
   public void setUp() throws Exception {
-    node1 = pantheon.createPrivateTransactionEnabledNode("node1", privacyParameters1);
-    node2 = pantheon.createPrivateTransactionEnabledMinerNode("node2", privacyParameters2);
+    enclave1 = createEnclave("orion_key_0.pub", "orion_key_0.key");
+    enclave2 = createEnclave("orion_key_1.pub", "orion_key_1.key", enclave1.nodeUrl());
+    node1 = pantheon.createPrivateTransactionEnabledNode("node1", getPrivacyParams(enclave1));
+    node2 = pantheon.createPrivateTransactionEnabledMinerNode("node2", getPrivacyParams(enclave2));
     //    node3 = pantheon.createPrivateTransactionEnabledMinerNode("node3", privacyParameters3);
     cluster.start(node1, node2);
   }
@@ -65,7 +56,7 @@ public class PrivacyClusterAcceptanceTest extends PrivateAcceptanceTestBase {
   @Test
   public void node2CanSeeContract() throws IOException {
     final String transactionHash =
-        node1.execute(transactions.deployPrivateSmartContract(getDeploySimpleStorageCluster()));
+        node1.execute(transactions.deployPrivateSmartContract(getDeployEventEmitterCluster()));
 
     privateTransactionVerifier
         .validPrivateContractDeployed(CONTRACT_ADDRESS.toString())
@@ -75,7 +66,7 @@ public class PrivacyClusterAcceptanceTest extends PrivateAcceptanceTestBase {
   @Test
   public void node2CanExecuteContract() throws IOException {
 
-    node1.execute(transactions.deployPrivateSmartContract(getDeploySimpleStorageCluster()));
+    node1.execute(transactions.deployPrivateSmartContract(getDeployEventEmitterCluster()));
 
     final String transactionHash =
         node2.execute(transactions.createPrivateRawTransaction(getExecuteStoreFuncCluster()));
@@ -88,7 +79,7 @@ public class PrivacyClusterAcceptanceTest extends PrivateAcceptanceTestBase {
   @Test
   public void node2CanSeePrivateTransactionReceipt() throws IOException {
 
-    node1.execute(transactions.deployPrivateSmartContract(getDeploySimpleStorageCluster()));
+    node1.execute(transactions.deployPrivateSmartContract(getDeployEventEmitterCluster()));
 
     node2.execute(transactions.createPrivateRawTransaction(getExecuteStoreFuncCluster()));
 
@@ -124,8 +115,8 @@ public class PrivacyClusterAcceptanceTest extends PrivateAcceptanceTestBase {
   //            .verify(node3, transactionHash, PUBLIC_KEY_3);
   //  }
 
-  @AfterClass
-  public static void tearDownOnce() {
+  @After
+  public void tearDown() {
     enclave1.getOrion().stop();
     enclave2.getOrion().stop();
     //    enclave3.getOrion().stop();
