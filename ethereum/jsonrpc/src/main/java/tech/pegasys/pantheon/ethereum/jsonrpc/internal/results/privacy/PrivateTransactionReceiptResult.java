@@ -12,6 +12,7 @@
  */
 package tech.pegasys.pantheon.ethereum.jsonrpc.internal.results.privacy;
 
+import org.apache.logging.log4j.Logger;
 import tech.pegasys.pantheon.ethereum.core.Hash;
 import tech.pegasys.pantheon.ethereum.core.Log;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.results.TransactionReceiptLogResult;
@@ -23,6 +24,8 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+import static org.apache.logging.log4j.LogManager.getLogger;
+
 @JsonPropertyOrder({
   "contractAddress",
   "from",
@@ -31,6 +34,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   "logs",
 })
 public class PrivateTransactionReceiptResult {
+
+  private static final Logger LOG = getLogger();
+
 
   private final String contractAddress;
   private final String from;
@@ -86,15 +92,18 @@ public class PrivateTransactionReceiptResult {
       final Hash transactionHash,
       final Hash blockHash,
       final int transactionIndex) {
+    LOG.trace("Building transaction receipt log results");
     final List<TransactionReceiptLogResult> logResults = new ArrayList<>(logs.size());
 
     for (int i = 0; i < logs.size(); i++) {
       final Log log = logs.get(i);
+      LOG.trace("Creating new TransactionReceiptLogResult(\n{},\n{},\n{},\n{},\n{},\n{})",
+              log, blockNumber, transactionHash, blockHash, transactionIndex, i);
       logResults.add(
           new TransactionReceiptLogResult(
               log, blockNumber, transactionHash, blockHash, transactionIndex, i));
     }
-
+    LOG.trace("Transaction receipt log results built");
     return logResults;
   }
 }

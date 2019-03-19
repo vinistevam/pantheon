@@ -12,6 +12,7 @@
  */
 package tech.pegasys.pantheon.ethereum.jsonrpc.internal.results;
 
+import org.apache.logging.log4j.Logger;
 import tech.pegasys.pantheon.ethereum.core.Hash;
 import tech.pegasys.pantheon.ethereum.core.Log;
 import tech.pegasys.pantheon.ethereum.core.LogTopic;
@@ -21,6 +22,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+import static org.apache.logging.log4j.LogManager.getLogger;
 
 @JsonPropertyOrder({
   "address",
@@ -34,6 +37,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   "removed"
 })
 public class TransactionReceiptLogResult {
+
+  private static final Logger LOG = getLogger();
 
   private final String address;
   private final List<String> topics;
@@ -54,7 +59,7 @@ public class TransactionReceiptLogResult {
       final int logIndex) {
     this.address = log.getLogger().toString();
     this.topics = new ArrayList<>(log.getTopics().size());
-
+    LOG.trace("Found {} topics", log.getTopics().size());
     for (final LogTopic topic : log.getTopics()) {
       topics.add(topic.toString());
     }
