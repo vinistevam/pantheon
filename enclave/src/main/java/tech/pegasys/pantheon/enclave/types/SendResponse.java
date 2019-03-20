@@ -14,6 +14,7 @@ package tech.pegasys.pantheon.enclave.types;
 
 public class SendResponse {
   String key;
+  byte[] privacyGroupId;
 
   public String getKey() {
     return key;
@@ -23,8 +24,17 @@ public class SendResponse {
     this.key = key;
   }
 
-  public SendResponse(final String key) {
+  public byte[] getPrivacyGroupId() {
+    return privacyGroupId;
+  }
+
+  public void setPrivacyGroupId(final byte[] privacyGroupId) {
+    this.privacyGroupId = privacyGroupId;
+  }
+
+  public SendResponse(final String key, final byte[] privacyGroupId) {
     this.key = key;
+    this.privacyGroupId = privacyGroupId;
   }
 
   public SendResponse() {}

@@ -15,6 +15,7 @@ package tech.pegasys.pantheon.enclave.types;
 public class ReceiveResponse {
 
   byte[] payload;
+  byte[] privacyGroupId;
 
   public byte[] getPayload() {
     return payload;
@@ -24,8 +25,17 @@ public class ReceiveResponse {
     this.payload = payload;
   }
 
-  public ReceiveResponse(final byte[] payload) {
+  public ReceiveResponse(final byte[] payload, final byte[] privacyGroupId) {
     this.payload = payload;
+    this.privacyGroupId = privacyGroupId;
+  }
+
+  public byte[] getPrivacyGroupId() {
+    return privacyGroupId;
+  }
+
+  public void setPrivacyGroupId(final byte[] privacyGroupId) {
+    this.privacyGroupId = privacyGroupId;
   }
 
   public ReceiveResponse() {}
