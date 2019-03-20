@@ -83,6 +83,7 @@ import tech.pegasys.pantheon.ethereum.jsonrpc.internal.methods.permissioning.Per
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.methods.permissioning.PermReloadPermissionsFromFile;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.methods.permissioning.PermRemoveAccountsFromWhitelist;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.methods.permissioning.PermRemoveNodesFromWhitelist;
+import tech.pegasys.pantheon.ethereum.jsonrpc.internal.methods.privacy.EeaClientCapabilities;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.methods.privacy.EeaGetTransactionReceipt;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.methods.privacy.EeaSendRawTransaction;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.parameters.JsonRpcParameter;
@@ -286,14 +287,13 @@ public class JsonRpcMethodsFactory {
       addMethods(
           enabledMethods,
           new EeaSendRawTransaction(
-              new PrivateTransactionHandler(privacyParameters), transactionPool, parameter));
-      addMethods(
-          enabledMethods,
+              new PrivateTransactionHandler(privacyParameters), transactionPool, parameter),
           new EeaGetTransactionReceipt(
               blockchainQueries,
               new Enclave(privacyParameters.getUrl()),
               parameter,
-              privacyParameters));
+              privacyParameters),
+          new EeaClientCapabilities());
     }
     return enabledMethods;
   }
