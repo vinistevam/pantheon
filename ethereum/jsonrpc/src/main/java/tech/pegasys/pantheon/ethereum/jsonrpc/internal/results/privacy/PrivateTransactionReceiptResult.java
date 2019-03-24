@@ -14,6 +14,7 @@ package tech.pegasys.pantheon.ethereum.jsonrpc.internal.results.privacy;
 
 import tech.pegasys.pantheon.ethereum.core.Hash;
 import tech.pegasys.pantheon.ethereum.core.Log;
+import tech.pegasys.pantheon.ethereum.jsonrpc.internal.results.JsonRpcResult;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.results.TransactionReceiptLogResult;
 import tech.pegasys.pantheon.util.bytes.BytesValue;
 
@@ -30,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   "output",
   "logs",
 })
-public class PrivateTransactionReceiptResult {
+public class PrivateTransactionReceiptResult implements JsonRpcResult {
 
   private final String contractAddress;
   private final String from;
