@@ -12,35 +12,44 @@
  */
 package tech.pegasys.pantheon.ethereum.jsonrpc.internal.methods.privacy;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.JsonRpcRequest;
+import tech.pegasys.pantheon.ethereum.jsonrpc.internal.response.JsonRpcResponse;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.response.JsonRpcSuccessResponse;
 import tech.pegasys.pantheon.ethereum.jsonrpc.internal.results.privacy.ClientCapabilitiesResult;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Before;
 import org.junit.Test;
 
 public class EeaClientCapabilitiesTest {
+
+  private EeaClientCapabilities method;
+  private final String JSON_RPC_VERSION = "2.0";
+  private final String ETH_METHOD = "eea_clientCapabilities";
+
+  @Before
+  public void setUp() {
+    method = new EeaClientCapabilities();
+  }
+
   @Test
-  public void requestClientCapabilities() throws IOException {
-    final EeaClientCapabilities eeaClientCapabilities = new EeaClientCapabilities();
+  public void requestClientCapabilities() {
 
-    final JsonRpcRequest request = new JsonRpcRequest("1", "eea_clientCapabilities", null);
+    final JsonRpcRequest request = new JsonRpcRequest(JSON_RPC_VERSION, ETH_METHOD, null);
 
-    final JsonRpcSuccessResponse actualResponse =
-        (JsonRpcSuccessResponse) eeaClientCapabilities.response(request);
+    final JsonRpcSuccessResponse expectedResponse =
+        new JsonRpcSuccessResponse(
+            request.getId(),
+            new ClientCapabilitiesResult(
+                Arrays.asList("PoW", "IBFT", "PoA/Clique"),
+                Collections.singletonList("restricted")));
 
-    final ObjectMapper mapper = new ObjectMapper();
-    ClientCapabilitiesResult capabilities;
-    capabilities =
-        mapper.readValue(actualResponse.getResult().toString(), ClientCapabilitiesResult.class);
+    final JsonRpcResponse actualResponse = method.response(request);
 
-    assertEquals(capabilities.getRestriction(), Collections.singletonList("restricted"));
-    assertEquals(capabilities.getConsensus(), Arrays.asList("PoW", "IBFT", "PoS/Clique"));
+    assertThat(actualResponse).isEqualToComparingFieldByFieldRecursively(expectedResponse);
   }
 }

@@ -22,9 +22,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /** Implements eea spec v2. 6.3.3.3 eea_clientCapabilities */
 public class EeaClientCapabilities implements JsonRpcMethod {
 
@@ -36,23 +33,15 @@ public class EeaClientCapabilities implements JsonRpcMethod {
   }
 
   @Override
-  public JsonRpcResponse response(JsonRpcRequest request) {
+  public JsonRpcResponse response(final JsonRpcRequest request) {
 
     // There is no way to programmatically get this
     List<String> restriction = Collections.singletonList("restricted");
-    List<String> consensus = Arrays.asList("PoW", "IBFT", "PoS/Clique");
+    List<String> consensus = Arrays.asList("PoW", "IBFT", "PoA/Clique");
 
     ClientCapabilitiesResult clientCapabilitiesResult =
         new ClientCapabilitiesResult(consensus, restriction);
 
-    final ObjectMapper mapper = new ObjectMapper();
-    String capabilities;
-    try {
-      capabilities = mapper.writeValueAsString(clientCapabilitiesResult);
-    } catch (JsonProcessingException e) {
-      return null;
-    }
-
-    return new JsonRpcSuccessResponse(request.getId(), capabilities);
+    return new JsonRpcSuccessResponse(request.getId(), clientCapabilitiesResult);
   }
 }

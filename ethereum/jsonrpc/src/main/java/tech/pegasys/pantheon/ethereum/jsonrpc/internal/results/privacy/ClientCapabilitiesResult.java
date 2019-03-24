@@ -12,32 +12,44 @@
  */
 package tech.pegasys.pantheon.ethereum.jsonrpc.internal.results.privacy;
 
-import java.util.List;
+import tech.pegasys.pantheon.ethereum.jsonrpc.internal.results.JsonRpcResult;
 
-public class ClientCapabilitiesResult {
+import java.util.List;
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+@JsonPropertyOrder({"consensus", "restriction"})
+public class ClientCapabilitiesResult implements JsonRpcResult {
   private List<String> consensus;
   private List<String> restriction;
-
-  public ClientCapabilitiesResult() {}
 
   public ClientCapabilitiesResult(final List<String> consensus, final List<String> restriction) {
     this.consensus = consensus;
     this.restriction = restriction;
   }
 
+  @JsonGetter(value = "consensus")
   public List<String> getConsensus() {
     return consensus;
   }
 
-  public void setConsensus(final List<String> consensus) {
-    this.consensus = consensus;
-  }
-
+  @JsonGetter(value = "restriction")
   public List<String> getRestriction() {
     return restriction;
   }
 
-  public void setRestriction(final List<String> restriction) {
-    this.restriction = restriction;
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    ClientCapabilitiesResult that = (ClientCapabilitiesResult) o;
+    return consensus.equals(that.consensus) && restriction.equals(that.restriction);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(consensus, restriction);
   }
 }
