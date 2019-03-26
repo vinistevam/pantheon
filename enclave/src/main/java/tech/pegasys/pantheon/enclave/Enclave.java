@@ -53,24 +53,29 @@ public class Enclave {
   }
 
   public SendResponse send(final SendRequest content) throws IOException {
-    return executePost("/send", objectMapper.writeValueAsString(content), SendResponse.class);
+    RequestBody body = RequestBody.create(JSON, objectMapper.writeValueAsString(content));
+    Request request = new Request.Builder()
+            .url(url + "/send").post(body).build();
+    return executePost(request, SendResponse.class);
   }
 
   public ReceiveResponse receive(final ReceiveRequest content) throws IOException {
-    return executePost("/receive", objectMapper.writeValueAsString(content), ReceiveResponse.class);
+    RequestBody body = RequestBody.create(MediaType.get("application/vnd.orion.v1+json"), objectMapper.writeValueAsString(content));
+    Request request = new Request.Builder()
+            .url(url + "/receive").post(body).build();
+    return executePost(request, ReceiveResponse.class);
   }
 
-  private <T> T executePost(final String path, final String content, final Class<T> responseType)
+  private <T> T executePost(final Request request, final Class<T> responseType)
       throws IOException {
     OkHttpClient client = new OkHttpClient();
 
-    RequestBody body = RequestBody.create(JSON, content);
-    Request request = new Request.Builder().url(url + path).post(body).build();
+
 
     try (Response response = client.newCall(request).execute()) {
       return objectMapper.readValue(response.body().string(), responseType);
     } catch (IOException e) {
-      LOG.error("Enclave failed to execute ", path);
+      LOG.error("Enclave failed to execute ", request);
       throw new IOException("Failed to execute post", e);
     }
   }
