@@ -1,111 +1,95 @@
+## Start Pantheon with Privacy Enabled
 
-## Start Pantheon with Privacy
-
-The EEA methods are not enabled by default, follow the steps above to
-use the command line options. Pantheon/Enclave(Orion) needs to be started 
-when using privacy.
-
-### Pantheon
-
-#### rpc-http-api
-
-```bash tab="Example Command Line"
---rpc-http-api=EEA
-```
-
-```bash tab="Example Configuration File"
-rpc-http-api=["EEA"]
-```
-
-Comma-separated APIs to enable on the HTTP JSON-RPC channel.
-When you use this option, the `--rpc-http-enabled` option must also be specified.
-The available API options are: `ADMIN`, `ETH`, `NET`, `WEB3`, `CLIQUE`, `IBFT`, `PERM`, `DEBUG`, `MINER`, and `EEA`.
-The default is: `ETH`, `NET`, `WEB3`.
+To start a Pantheon node with private transaction capabilities, one must
+first start an Enclave. Currently, only the Orion enclave is supported.
+This document outlines how to start a simple private network on a local
+machine and how to send and verify Private Transactions between these
+nodes.
 
 !!!note
-    EEA methods are for privacy features. Privacy features are under development and will be available in v1.1.  
-
-!!!tip
-    The singular `--rpc-http-api` and plural `--rpc-http-apis` are available and are just two
-    names for the same option.
-
-#### privacy-enabled
-
-```bash tab="Example Command Line"
---privacy-enabled=true
-```
-
-```bash tab="Example Configuration File"
-privacy-enabled=true
-```
-
-Set to enable private transactions. 
-The default is false.
-
-!!!note
-    Privacy is under development and will be available in v1.1.  
-
-#### privacy-precompiled-address
-
-```bash tab="Example Command Line"
---privacy-precompiled-address=125
-```
-
-```bash tab="Example Configuration File"
-privacy-precompiled-address=125
-```
-
-Address to which the privacy pre-compiled contract is mapped.
-The default is 126. 
-
-!!!note
-    Privacy is under development and will be available in v1.1.    
-
-
-### Enclave (Orion)
-
-#### privacy-public-key-file
-
-```bash tab="Syntax"
---privacy-public-key-file=<privacyPublicKeyFile>
-```
-
-Path to the public key for the enclave.     
-
-!!!note
-    Privacy is under development and will be available in v1.1.
-
-!!!note
-    This option is not used when running Pantheon from the [Docker image](../Getting-Started/Run-Docker-Image.md#privacy-public-key-file).
-
-#### privacy-url
-
-```bash tab="Syntax"
---privacy-url=<privacyUrl>
-```
-
-URL on which the Enclave is running.    
-
-!!!note
-    Privacy is under development and will be available in v1.1.
-    
-    
-### Privacy JSON-RPC API method
-
-The [EEA methods](../Reference/JSON-RPC-API-Methods.md#eea_sendRawTransaction) were created to
-provide and support privacy.
-
-### Set-up Privacy
+    There is currently no client to easily create and send transaction with.
+    This document will use 3 pre-built signed RLP encoded transactions.
 
 ## Prerequisites 
 
 [Pantheon](../Installation/Install-Binaries.md) 
 
+[Orion](https://docs.orion.pegasys.tech/en/latest/Installation/Install-Binaries/)
+
 [Curl (or similar web service client)](https://curl.haxx.se/download.html) 
 
-## Steps
+### Enclave (Orion)
 
-To create a private network: 
+Below is an example of the minimum configuration to set-up an Orion node 
+that will interact with Pantheon in the processing of Private Transactions.
+Orion can be started independently from Pantheon.
+
+Please consult the [Orion CLI documentation](https://docs.orion.pegasys.tech/en/latest/Reference/Orion-CLI-Syntax/#configuration-file) 
+and [Orion Configuration documentation](https://docs.orion.pegasys.tech/en/latest/Configuring-Orion/Configuration-File/) 
+for further details.
+
+```bash tab="Syntax"
+orion <FILE>
+```
+
+```bash tab="Example Command Line"
+orion /home/me/me_enclave/orion.conf
+```
+
+```bash tab="Example Configuration File"
+nodeurl = "http://127.0.0.1:8080/"
+nodeport = 8080
+nodenetworkinterface = "127.0.0.1"
+clienturl = "http://127.0.0.1:8888/"
+clientport = 8888
+clientnetworkinterface = "127.0.0.1"
+workdir = "data"
+othernodes = ["http://127.0.0.1:8081/"]
+publickeys = ["key.pub"]
+privatekeys = ["key.key"]
+```
+
+!!!note
+    You must have an Orion Enclave running with the `nodeurl` set to `http://127.0.0.1:8081/`
+    and `nodeport` set to `8081` for the above configuration to work.
+    
+!!!note
+    You do not need to specify `othernodes` for the first Orion instance that is created.
+
+### Starting Pantheon
+
+Below is an example of the minimum configuration to set-up a Pantheon node 
+capable of sending and processing Private Transactions.
+
+```bash tab="Syntax"
+pantheon --network=<NETWORK> --rpc-http-api=<api name>[,<api name>...]... --privacy-enabled[=<true|false>] --privacy-url=<url> --privacy-public-key-file=<FILE>
+```
+
+```bash tab="Example Command Line"
+pantheon --network=dev --rpc-http-api=EEA --privacy-enabled --privacy-url=http://meenclave.com/8888 --privacy-public-key-file=/home/me/me_enclave/data/key
+```
+
+```bash tab="Example Configuration File"
+network="dev" 
+rpc-http-api="EEA" 
+privacy-enabled=true 
+privacy-url="http://meenclave.com/8888"
+privacy-public-key-file="/home/me/me_enclave/data/key"
+```
+
+More information about the option used above can be found via the following links:
+- [network](../Reference/Pantheon-CLI-Syntax.md#network)
+- [rpc-http-api](../Reference/Pantheon-CLI-Syntax.md#rpc-http-api)
+- [privacy-enabled](../Reference/Pantheon-CLI-Syntax.md#privacy-enabled)
+- [privacy-url](../Reference/Pantheon-CLI-Syntax.md#privacy-url)
+- [privacy-public-key-file](../Reference/Pantheon-CLI-Syntax.md#privacy-public-key-file)
+
+!!!note
+    Privacy is under development and will be available in v1.1.
+    
+## Private Transaction walkthrough
+
+To create a 3-node private network on your local machine: 
 
 1. [Create Folders](#1-create-folders)
 2. [Create Genesis File](#2-create-genesis-file)
