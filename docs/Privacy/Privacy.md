@@ -65,8 +65,8 @@ Transaction Handler (as a response to the synchronous HTTP call).
      
 7. The Private Transaction Handler will create a Privacy Marker Transaction (PMT).
 A PMT is a standard public Ethereum transaction. The payload of the PMT 
-is the Enclave-key of the private transaction. The `to` attribute of the PMT the 
-privacy precompile contract. The PMT is signed with the nodes default key.
+is the Enclave-key associated with the private transaction. The `to` attribute of 
+the PMT is the privacy precompile contract. The PMT is signed with the nodes default key.
 The PMT is sent to the transaction pool. Once the PMT has been mined in a block
 it is distributed to all nodes in the network. 
 
