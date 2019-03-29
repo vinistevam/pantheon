@@ -698,6 +698,12 @@ Address to which the privacy pre-compiled contract is mapped.
 The default is 126. 
 
 !!!note
+    The values 0 to 8 are reserved. 
+    
+!!!note
+    The maximum is currently 126. 
+
+!!!note
     Privacy is under development and will be available in v1.1.    
     
 ### privacy-public-key-file
