@@ -675,11 +675,11 @@ Set to enable contract-based node level permissions. Default is `false`.
 ```
 
 ```bash tab="Example Command Line"
---privacy-enabled=false
+--privacy-enabled
 ```
 
 ```bash tab="Example Configuration File"
-privacy-enabled=false
+privacy-enabled=true
 ```
 
 Set to enable private transactions. 
@@ -691,7 +691,15 @@ The default is false.
 ### privacy-precompiled-address
 
 ```bash tab="Syntax"
---privacy-precompiled-address=<privacyPrecompiledAddress>
+--privacy-precompiled-address=<INTEGER>
+```
+
+```bash tab="Example Command Line"
+--privacy-precompiled-address=55
+```
+
+```bash tab="Example Configuration File"
+privacy-precompiled-address=55
 ```
 
 Address to which the privacy pre-compiled contract is mapped.
@@ -709,7 +717,15 @@ The default is 126.
 ### privacy-public-key-file
 
 ```bash tab="Syntax"
---privacy-public-key-file=<privacyPublicKeyFile>
+--privacy-public-key-file=<FILE>
+```
+
+```bash tab="Example Command Line"
+--privacy-public-key-file=/home/me/me_enclave/key
+```
+
+```bash tab="Example Configuration File"
+privacy-public-key-file="/home/me/me_enclave/key"
 ```
 
 Path to the public key for the enclave.     
@@ -723,7 +739,15 @@ Path to the public key for the enclave.
 ### privacy-url
 
 ```bash tab="Syntax"
---privacy-url=<privacyUrl>
+--privacy-url=<url>
+```
+
+```bash tab="Example Command Line"
+--privacy-url=http://meenclave.com/8888
+```
+
+```bash tab="Example Configuration File"
+privacy-url="http://meenclave.com/8888"
 ```
 
 URL on which enclave is running.    
